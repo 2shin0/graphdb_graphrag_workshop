@@ -8,3 +8,4 @@
 ## ✅ 배포 사이트
 빠른 사이트 제작 및 배포를 위해 Gradio와 Huggingface를 사용해 보았습니다.
 [실습 자료](https://huggingface.co/spaces/0shin0/snu_workshop_space)
+GraphDB는 2024년 12월 12일까지 체험 가능합니다.
