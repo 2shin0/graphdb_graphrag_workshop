@@ -1,0 +1,1531 @@
+// 학교급 노드 생성
+    CREATE (school:School {school: 'E', name: '초등학교'});
+
+// 학년 노드 생성
+    MATCH (school:School {school: 'E'})
+    UNWIND [
+        {grade: '3', name: 'g3'},
+        {grade: '4', name: 'g4'},
+        {grade: '5', name: 'g5'},
+        {grade: '6', name: 'g6'}
+    ] AS gradeData
+    CREATE (g:Grade {grade: gradeData.grade, school: 'E', name: gradeData.name})
+    CREATE (g)-[:belongs_to]->(school);
+
+match(g:Grade) return g
+
+// 학년별 대주제 노드 생성
+    UNWIND [
+        {grade: '3', topics: [
+            {code: '3A01', name: '덧셈과 뺄셈'},
+            {code: '3A02', name: '곱셈'},
+            {code: '3A03', name: '나눗셈'},
+            {code: '3A04', name: '분수와 소수'},
+            {code: '3A05', name: '평면도형'},
+            {code: '3A06', name: '길이와 시간'},
+            {code: '3A07', name: '들이와 무게'},
+            {code: '3A08', name: '자료의 정리'}
+        ]},
+        {grade: '4', topics: [
+            {code: '4A01', name: '큰수'},
+            {code: '4A02', name: '곱셈과 나눗셈'},
+            {code: '4A03', name: '분수의 덧셈과 뺄셈'},
+            {code: '4A04', name: '소수의 덧셈과 뺄셈'},
+            {code: '4A05', name: '규칙 찾기'},
+            {code: '4A06', name: '도형의 이동'},
+            {code: '4A07', name: '삼각형'},
+            {code: '4A08', name: '사각형'},
+            {code: '4A09', name: '다각형'},
+            {code: '4A10', name: '각도'},
+            {code: '4A11', name: '막대그래프와 꺾은선그래프'}
+        ]},
+        {grade: '5', topics: [
+            {code: '5A01', name: '자연수의 혼합 계산'},
+            {code: '5A02', name: '수의 범위와 어림'},
+            {code: '5A03', name: '약수와 배수'},
+            {code: '5A04', name: '약분과 통분'},
+            {code: '5A05', name: '분수의 덧셈과 뺄셈'},
+            {code: '5A06', name: '분수의 곱셈'},
+            {code: '5A07', name: '소수의 곱셈'},
+            {code: '5A08', name: '대응 관계'},
+            {code: '5A09', name: '합동과 대칭'},
+            {code: '5A10', name: '직육면체와 정육면체'},
+            {code: '5A11', name: '다각형의 둘레와 넓이'},
+            {code: '5A12', name: '평균과 가능성'}
+        ]},
+        {grade: '6', topics: [
+            {code: '6A01', name: '분수의 나눗셈'},
+            {code: '6A02', name: '소수의 나눗셈'},
+            {code: '6A03', name: '비와 비율'},
+            {code: '6A04', name: '비례식과 비례배분'},
+            {code: '6A05', name: '각기둥과 각뿔'},
+            {code: '6A06', name: '원기둥/원뿔/구'},
+            {code: '6A07', name: '공간과 입체'},
+            {code: '6A08', name: '원주율과 원의 넓이'},
+            {code: '6A09', name: '직육면체와 정육면체의 겉넓이와 부피'},
+            {code: '6A10', name: '띠그래프와 원그래프'}
+        ]}
+    ] AS gradeData
+    MATCH (g:Grade {grade: gradeData.grade})
+    UNWIND gradeData.topics AS topic
+    CREATE (m:MainTopic {code: topic.code, name: topic.name})
+    CREATE (g)-[:includes]->(m);
+
+match(m:MainTopic) return m
+
+MATCH (g5:Grade {grade: '5'})-[:includes]->(m:MainTopic)
+RETURN g5, m
+
+// 대주제간 선수-후수 학습 관계 생성
+    UNWIND [
+        {from: '3A01', to: '3A02'},
+        {from: '3A01', to: '3A03'},
+        {from: '3A01', to: '3A03'},
+        {from: '3A03', to: '3A04'},
+        {from: '3A02', to: '4A02'},
+        {from: '3A03', to: '4A02'},
+        {from: '3A04', to: '4A03'},
+        {from: '3A04', to: '4A04'},
+        {from: '3A05', to: '4A06'},
+        {from: '3A05', to: '4A07'},
+        {from: '3A05', to: '4A08'},
+        {from: '3A05', to: '4A09'},
+        {from: '4A07', to: '4A08'},
+        {from: '4A08', to: '4A09'},
+        {from: '4A09', to: '4A10'},
+        {from: '3A08', to: '4A11'},
+        {from: '4A02', to: '5A01'},
+        {from: '4A02', to: '5A03'},
+        {from: '4A02', to: '5A04'},
+        {from: '4A03', to: '5A05'},
+        {from: '5A05', to: '5A06'},
+        {from: '4A04', to: '5A07'},
+        {from: '4A09', to: '5A08'},
+        {from: '5A08', to: '5A09'},
+        {from: '4A09', to: '5A10'},
+        {from: '5A06', to: '6A01'},
+        {from: '5A07', to: '6A02'},
+        {from: '6A03', to: '6A04'},
+        {from: '5A10', to: '6A05'},
+        {from: '6A05', to: '6A06'},
+        {from: '6A06', to: '6A07'},
+        {from: '6A07', to: '6A08'},
+        {from: '6A07', to: '6A09'},
+        {from: '4A11', to: '6A10'}
+    ] AS relation
+    MATCH (fromTopic:MainTopic {code: relation.from})
+    MATCH (toTopic:MainTopic {code: relation.to})
+    CREATE (fromTopic)-[:precedes]->(toTopic);
+
+MATCH (m1:MainTopic {name: '평면도형'})-[:precedes]->(m2:MainTopic)
+RETURN m1, m2;
+
+// 학생 노드 생성
+    create
+    (김지원:Person{name:'김지원',학년:'3',성별:'여',ID:'jw01',PW:'jw01*'}),
+    (배수지:Person{name:'배수지',학년:'4',성별:'여',ID:'sj02',PW:'sj02*'}),
+    (박보영:Person{name:'박보영',학년:'5',성별:'여',ID:'by03',PW:'by03*'}),
+    (고아라:Person{name:'고아라',학년:'5',성별:'여',ID:'ar04',PW:'ar04*'}),
+    (신세경:Person{name:'신세경',학년:'6',성별:'여',ID:'sk05',PW:'sk05*'}),
+    (이도현:Person{name:'이도현',학년:'3',성별:'남',ID:'dh06',PW:'dh06*'}),
+    (남주혁:Person{name:'남주혁',학년:'4',성별:'남',ID:'jh07',PW:'jh07*'}),
+    (정해인:Person{name:'정해인',학년:'4',성별:'남',ID:'hi08',PW:'hi08*'}),
+    (변우석:Person{name:'변우석',학년:'5',성별:'남',ID:'ws09',PW:'ws09*'}),
+    (박보검:Person{name:'박보검',학년:'6',성별:'남',ID:'bg10',PW:'bg10*'})
+
+// 학년 노드와 관계 생성
+    MATCH (p:Person)
+    MATCH (g:Grade {grade: p.학년})
+    CREATE (p)-[:belongs_to]->(g)
+
+MATCH (p:Person), (g:Grade)
+RETURN p, g
+
+MATCH (p:Person)
+WHERE p.name STARTS WITH '배'
+RETURN count(p.name);
+
+MATCH (p:Person)
+WHERE p.name CONTAINS '배'
+RETURN count(p.name);
+
+// MainTopic별 문제 및 관계 생성
+    // 3학년
+        MATCH (m1:MainTopic {code: '3A01'}), (m2:MainTopic {code: '3A02'}), (m3:MainTopic {code: '3A03'}),
+        (m4:MainTopic {code: '3A04'}), (m5:MainTopic {code: '3A05'}), (m6:MainTopic {code: '3A06'}),
+        (m7:MainTopic {code: '3A07'}), (m8:MainTopic {code: '3A08'})
+        UNWIND [
+            {code: '3A01Q01', question: '3 + 5 = ?', options: ['7', '8', '9', '10'], correct_answer: '8'},
+            {code: '3A01Q02', question: '7 - 4 = ?', options: ['3', '2', '1', '4'], correct_answer: '3'},
+            {code: '3A01Q03', question: '15 - 8 = ?', options: ['7', '6', '8', '9'], correct_answer: '7'},
+            {code: '3A01Q04', question: '9 + 6 = ?', options: ['15', '16', '14', '13'], correct_answer: '15'},
+            {code: '3A01Q05', question: '12 - 9 = ?', options: ['2', '3', '4', '1'], correct_answer: '3'},
+
+            {code: '3A02Q01', question: '4 × 6 = ?', options: ['24', '26', '28', '30'], correct_answer: '24'},
+            {code: '3A02Q02', question: '3 × 7 = ?', options: ['20', '21', '23', '19'], correct_answer: '21'},
+            {code: '3A02Q03', question: '5 × 8 = ?', options: ['40', '42', '38', '36'], correct_answer: '40'},
+            {code: '3A02Q04', question: '9 × 2 = ?', options: ['16', '18', '17', '19'], correct_answer: '18'},
+            {code: '3A02Q05', question: '6 × 5 = ?', options: ['28', '29', '30', '32'], correct_answer: '30'},
+
+            {code: '3A03Q01', question: '12 ÷ 3 = ?', options: ['3', '4', '5', '6'], correct_answer: '4'},
+            {code: '3A03Q02', question: '16 ÷ 4 = ?', options: ['3', '4', '5', '6'], correct_answer: '4'},
+            {code: '3A03Q03', question: '20 ÷ 5 = ?', options: ['3', '4', '5', '6'], correct_answer: '4'},
+            {code: '3A03Q04', question: '27 ÷ 3 = ?', options: ['8', '9', '7', '10'], correct_answer: '9'},
+            {code: '3A03Q05', question: '18 ÷ 2 = ?', options: ['7', '8', '9', '10'], correct_answer: '9'},
+
+            {code: '3A04Q01', question: '어떤 분수가 0.5와 동일한가요?', options: ['1/2', '1/3', '1/4', '2/3'], correct_answer: '1/2'},
+            {code: '3A04Q02', question: '0.25를 분수로 나타내면 무엇인가요?', options: ['1/4', '1/2', '2/5', '1/3'], correct_answer: '1/4'},
+            {code: '3A04Q03', question: '1/3을 소수로 나타내면 무엇인가요?', options: ['0.3', '0.33', '0.31', '0.3'], correct_answer: '0.33'},
+            {code: '3A04Q04', question: '다음 중 0.6보다 큰 수는 무엇인가요?', options: ['0.7', '0.5', '0.4', '0.3'], correct_answer: '0.7'},
+            {code: '3A04Q05', question: '0.75를 분수로 나타내면 무엇인가요?', options: ['3/4', '2/5', '3/5', '2/3'], correct_answer: '3/4'},
+
+            {code: '3A05Q01', question: '삼각형은 몇 개의 변을 가지고 있나요?', options: ['3', '4', '5', '6'], correct_answer: '3'},
+            {code: '3A05Q02', question: '4개의 변을 가진 도형의 이름은 무엇인가요?', options: ['정사각형', '삼각형', '원', '직사각형'], correct_answer: '직사각형'},
+            {code: '3A05Q03', question: '어떤 도형은 코너가 없나요?', options: ['원', '정사각형', '삼각형', '직사각형'], correct_answer: '원'},
+            {code: '3A05Q04', question: '직각 삼각형은 몇 개의 각을 가지고 있나요?', options: ['1', '2', '3', '4'], correct_answer: '3'},
+            {code: '3A05Q05', question: '네 변이 모두 같은 도형은 무엇인가요?', options: ['정사각형', '직사각형', '삼각형', '원'], correct_answer: '정사각형'},
+
+            {code: '3A06Q01', question: '표준 자의 길이는 얼마인가요?', options: ['30 cm', '25 cm', '15 cm', '20 cm'], correct_answer: '30 cm'},
+            {code: '3A06Q02', question: '1시간은 몇 분인가요?', options: ['60', '120', '100', '30'], correct_answer: '60'},
+            {code: '3A06Q03', question: '1분은 몇 초인가요?', options: ['60', '100', '50', '120'], correct_answer: '60'},
+            {code: '3A06Q04', question: '어떤 것이 더 긴가요: 1미터 또는 100센티미터?', options: ['1미터', '100센티미터'], correct_answer: '1미터'},
+            {code: '3A06Q05', question: '30분은 몇 분인가요?', options: ['30분', '20분', '40분', '60분'], correct_answer: '30분'},
+
+            {code: '3A07Q01', question: '무게를 측정하는 단위는 무엇인가요?', options: ['킬로그램', '리터', '미터', '섭씨'], correct_answer: '킬로그램'},
+            {code: '3A07Q02', question: '표준 사과의 무게는 얼마인가요?', options: ['200그램', '150그램', '100그램', '50그램'], correct_answer: '200그램'},
+            {code: '3A07Q03', question: '다음 중 가장 가벼운 것은 무엇인가요?', options: ['깃털', '돌', '노트북', '책'], correct_answer: '깃털'},
+            {code: '3A07Q04', question: '1킬로그램은 몇 그램인가요?', options: ['1000', '500', '100', '1500'], correct_answer: '1000'},
+            {code: '3A07Q05', question: '부피를 측정하는 단위는 무엇인가요?', options: ['리터', '그램', '미터', '킬로그램'], correct_answer: '리터'},
+
+            {code: '3A08Q01', question: '다음 중 그래프의 종류는 무엇인가요?', options: ['막대그래프', '원', '사각형', '직사각형'], correct_answer: '막대그래프'},
+            {code: '3A08Q02', question: '다음 숫자들의 평균은 무엇인가요: 3, 5, 7, 9?', options: ['6', '7', '5', '4'], correct_answer: '6'},
+            {code: '3A08Q03', question: '다음 중 범주의 빈도를 나타내는 데이터 표현은 무엇인가요?', options: ['막대그래프', '선그래프', '파이차트', '점프표'], correct_answer: '막대그래프'},
+            {code: '3A08Q04', question: '파이차트는 무엇을 나타내나요?', options: ['비율', '시간', '수량', '온도'], correct_answer: '비율'},
+            {code: '3A08Q05', question: '숫자 집합의 평균을 구하는 방법은 무엇인가요?', options: ['모든 숫자를 더하고 개수로 나눈다', '가장 큰 숫자와 작은 숫자를 더한다', '가장 작은 숫자와 큰 숫자의 차이를 구한다', '숫자의 개수를 센다'], correct_answer: '모든 숫자를 더하고 개수로 나눈다'}
+        ] AS q
+        WITH m1, m2, m3, m4, m5, m6, m7, m8, q
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '3A01' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m1)-[:has_question]->(question)
+        )
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '3A02' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m2)-[:has_question]->(question)
+        )
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '3A03' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m3)-[:has_question]->(question)
+        )
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '3A04' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m4)-[:has_question]->(question)
+        )
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '3A05' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m5)-[:has_question]->(question)
+        )
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '3A06' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m6)-[:has_question]->(question)
+        )
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '3A07' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m7)-[:has_question]->(question)
+        )
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '3A08' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m8)-[:has_question]->(question)
+        )
+
+    // 4학년
+        MATCH (m1:MainTopic {code: '4A01'}), (m2:MainTopic {code: '4A02'}), (m3:MainTopic {code: '4A03'}),
+        (m4:MainTopic {code: '4A04'}), (m5:MainTopic {code: '4A05'}), (m6:MainTopic {code: '4A06'}),
+        (m7:MainTopic {code: '4A07'}), (m8:MainTopic {code: '4A08'}), (m9:MainTopic {code: '4A09'}),
+        (m10:MainTopic {code: '4A10'}), (m11:MainTopic {code: '4A11'})
+        UNWIND [
+            {code: '4A01Q01', question: '다음 중 가장 큰 수는 무엇인가요: 1234, 5678, 91011, 1213?', options: ['5678', '1234', '91011', '1213'], correct_answer: '91011'},
+            {code: '4A01Q02', question: '10000보다 큰 수는 무엇인가요?', options: ['5000', '12000', '7000', '3000'], correct_answer: '12000'},
+            {code: '4A01Q03', question: '45987에서 5의 자리는 무엇인가요?', options: ['십만', '천', '백', '십'], correct_answer: '천'},
+            {code: '4A01Q04', question: '9876 + 5432는 무엇인가요?', options: ['15008', '15108', '15308', '14908'], correct_answer: '15108'},
+            {code: '4A01Q05', question: '30000 - 11000은 무엇인가요?', options: ['18000', '17000', '16000', '19000'], correct_answer: '19000'},
+            
+            {code: '4A02Q01', question: '12 × 3은 얼마인가요?', options: ['36', '34', '38', '40'], correct_answer: '36'},
+            {code: '4A02Q02', question: '48 ÷ 6은 얼마인가요?', options: ['7', '8', '9', '6'], correct_answer: '8'},
+            {code: '4A02Q03', question: '64 ÷ 8은 얼마인가요?', options: ['7', '8', '9', '10'], correct_answer: '8'},
+            {code: '4A02Q04', question: '15 × 4는 얼마인가요?', options: ['60', '55', '65', '70'], correct_answer: '60'},
+            {code: '4A02Q05', question: '90 ÷ 9는 얼마인가요?', options: ['9', '8', '7', '6'], correct_answer: '10'},
+            
+            {code: '4A03Q01', question: '1/4 + 2/4는 얼마인가요?', options: ['3/4', '1/2', '5/4', '3/2'], correct_answer: '3/4'},
+            {code: '4A03Q02', question: '5/8 - 3/8은 얼마인가요?', options: ['2/8', '1/2', '1/8', '3/8'], correct_answer: '2/8'},
+            {code: '4A03Q03', question: '2/5 + 3/5는 얼마인가요?', options: ['1', '5/5', '2/3', '1/2'], correct_answer: '1'},
+            {code: '4A03Q04', question: '7/9 - 4/9는 얼마인가요?', options: ['3/9', '2/9', '5/9', '1/9'], correct_answer: '3/9'},
+            {code: '4A03Q05', question: '3/7 + 4/7은 얼마인가요?', options: ['7/7', '1', '5/7', '6/7'], correct_answer: '1'},
+            
+            {code: '4A04Q01', question: '0.5 + 0.3은 얼마인가요?', options: ['0.8', '0.7', '0.6', '1'], correct_answer: '0.8'},
+            {code: '4A04Q02', question: '1.2 - 0.5는 얼마인가요?', options: ['0.6', '0.7', '0.5', '0.4'], correct_answer: '0.7'},
+            {code: '4A04Q03', question: '0.6 + 0.4는 얼마인가요?', options: ['1', '1.1', '0.9', '1.2'], correct_answer: '1'},
+            {code: '4A04Q04', question: '2.5 - 1.4는 얼마인가요?', options: ['1.0', '1.1', '1.2', '1.3'], correct_answer: '1.1'},
+            {code: '4A04Q05', question: '3.7 + 2.3은 얼마인가요?', options: ['6.0', '5.8', '5.9', '6.1'], correct_answer: '6.0'},
+            
+            {code: '4A05Q01', question: '다음 숫자는 무엇인가요? 패턴: 2, 4, 6, ?', options: ['7', '8', '10', '12'], correct_answer: '8'},
+            {code: '4A05Q02', question: '다음 숫자는 무엇인가요? 패턴: 5, 10, 15, ?', options: ['20', '25', '30', '35'], correct_answer: '20'},
+            {code: '4A05Q03', question: '다음 숫자는 무엇인가요? 패턴: 10, 15, 20, ?', options: ['25', '30', '35', '40'], correct_answer: '25'},
+            {code: '4A05Q04', question: '다음 숫자는 무엇인가요? 패턴: 7, 14, 21, ?', options: ['28', '30', '35', '40'], correct_answer: '28'},
+            {code: '4A05Q05', question: '다음 숫자는 무엇인가요? 패턴: 3, 6, 9, ?', options: ['12', '15', '18', '21'], correct_answer: '12'},
+            
+            {code: '4A06Q01', question: '도형이 왼쪽으로 이동하면 어떤 방향인가요?', options: ['왼쪽', '오른쪽', '위쪽', '아래쪽'], correct_answer: '왼쪽'},
+            {code: '4A06Q02', question: '도형이 위로 이동하면 어떤 방향인가요?', options: ['왼쪽', '오른쪽', '위쪽', '아래쪽'], correct_answer: '위쪽'},
+            {code: '4A06Q03', question: '도형이 오른쪽으로 이동하면 어떤 방향인가요?', options: ['왼쪽', '오른쪽', '위쪽', '아래쪽'], correct_answer: '오른쪽'},
+            {code: '4A06Q04', question: '도형이 아래로 이동하면 어떤 방향인가요?', options: ['왼쪽', '오른쪽', '위쪽', '아래쪽'], correct_answer: '아래쪽'},
+            {code: '4A06Q05', question: '도형이 한 위치에서 다른 위치로 이동하면 무엇인가요?', options: ['이동', '회전', '반사', '크기 변화'], correct_answer: '이동'},
+            
+            {code: '4A07Q01', question: '삼각형은 몇 개의 변을 가지고 있나요?', options: ['3', '4', '5', '6'], correct_answer: '3'},
+            {code: '4A07Q02', question: '다음 도형 중 세 변을 가진 도형은 무엇인가요?', options: ['삼각형', '사각형', '직사각형', '원'], correct_answer: '삼각형'},
+            {code: '4A07Q03', question: '모든 변이 동일한 삼각형은 무엇인가요?', options: ['정삼각형', '이등변삼각형', '스칼렌 삼각형', '직각삼각형'], correct_answer: '정삼각형'},
+            {code: '4A07Q04', question: '두 변이 같은 삼각형은 무엇인가요?', options: ['정삼각형', '이등변삼각형', '스칼렌 삼각형', '직각삼각형'], correct_answer: '이등변삼각형'},
+            {code: '4A07Q05', question: '같은 변이 없는 삼각형은 무엇인가요?', options: ['스칼렌 삼각형', '정삼각형', '이등변삼각형', '직각삼각형'], correct_answer: '스칼렌 삼각형'},
+            
+            {code: '4A08Q01', question: '사각형은 몇 개의 변을 가지고 있나요?', options: ['4', '3', '5', '6'], correct_answer: '4'},
+            {code: '4A08Q02', question: '다음 도형 중 네 개의 변을 가진 것은 무엇인가요?', options: ['사각형', '원', '삼각형', '육각형'], correct_answer: '사각형'},
+            {code: '4A08Q03', question: '모든 변이 같은 도형은 무엇인가요?', options: ['정사각형', '사각형', '원', '삼각형'], correct_answer: '정사각형'},
+            {code: '4A08Q04', question: '반대편 변의 길이가 같은 도형은 무엇인가요?', options: ['사각형', '정사각형', '삼각형', '원'], correct_answer: '사각형'},
+            {code: '4A08Q05', question: '모든 각도가 90°인 도형은 무엇인가요?', options: ['사각형', '원', '삼각형', '정사각형'], correct_answer: '사각형'},
+            
+            {code: '4A09Q01', question: '오각형은 몇 개의 변을 가지고 있나요?', options: ['5', '6', '7', '8'], correct_answer: '5'},
+            {code: '4A09Q02', question: '육각형은 몇 개의 변을 가지고 있나요?', options: ['5', '6', '7', '8'], correct_answer: '6'},
+            {code: '4A09Q03', question: '여덟 개의 변을 가진 도형은 무엇인가요?', options: ['팔각형', '육각형', '오각형', '사각형'], correct_answer: '팔각형'},
+            {code: '4A09Q04', question: '네 개의 변의 길이가 같은 도형은 무엇인가요?', options: ['정사각형', '사각형', '오각형', '육각형'], correct_answer: '정사각형'},
+            {code: '4A09Q05', question: '일곱 개의 변을 가진 도형의 이름은 무엇인가요?', options: ['칠각형', '팔각형', '구각형', '십각형'], correct_answer: '칠각형'},
+            
+            {code: '4A10Q01', question: '직각의 크기는 얼마인가요?', options: ['90°', '45°', '60°', '180°'], correct_answer: '90°'},
+            {code: '4A10Q02', question: '평각의 크기는 얼마인가요?', options: ['180°', '90°', '120°', '45°'], correct_answer: '180°'},
+            {code: '4A10Q03', question: '예각의 크기는 얼마인가요?', options: ['90° 미만', '90° 이상', '정확히 90°', '정확히 180°'], correct_answer: '90° 미만'},
+            {code: '4A10Q04', question: '둔각의 크기는 얼마인가요?', options: ['90° 초과 180° 미만', '정확히 90°', '정확히 180°', '90° 미만'], correct_answer: '90° 초과 180° 미만'},
+            {code: '4A10Q05', question: '다음 각도 중 둔각은 무엇인가요?', options: ['120°', '60°', '45°', '90°'], correct_answer: '120°'},
+            
+            {code: '4A11Q01', question: '어떤 그래프가 시간에 따른 변화를 보여주나요?', options: ['꺾은선그래프', '막대그래프', '원그래프', '산점도'], correct_answer: '꺾은선그래프'},
+            {code: '4A11Q02', question: '어떤 그래프가 범주 간 비교에 가장 적합한가요?', options: ['막대그래프', '꺾은선그래프', '원그래프', '산점도'], correct_answer: '막대그래프'},
+            {code: '4A11Q03', question: '어떤 그래프가 전체에서 차지하는 비율을 보여주나요?', options: ['원그래프', '막대그래프', '꺾은선그래프', '산점도'], correct_answer: '원그래프'},
+            {code: '4A11Q04', question: '꺾은선그래프는 주로 무엇을 보여주나요?', options: ['시간에 따른 변화', '전체에서의 비율', '범주 간 비교', '다른 그룹 간 비교'], correct_answer: '시간에 따른 변화'},
+            {code: '4A11Q05', question: '다음 중 막대그래프의 특징은 무엇인가요?', options: ['막대가 범주를 나타낸다', '점이 시간을 나타낸다', '비율을 표시한다', '시간에 따른 변화를 나타낸다'], correct_answer: '막대가 범주를 나타낸다'}
+        ] AS q
+        WITH m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, q
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '4A01' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m1)-[:has_question]->(question)
+        )
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '4A02' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m2)-[:has_question]->(question)
+        )        
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '4A03' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m3)-[:has_question]->(question)
+        ) 
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '4A04' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m4)-[:has_question]->(question)
+        ) 
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '4A05' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m5)-[:has_question]->(question)
+        ) 
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '4A06' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m6)-[:has_question]->(question)
+        ) 
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '4A07' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m7)-[:has_question]->(question)
+        ) 
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '4A08' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m8)-[:has_question]->(question)
+        ) 
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '4A09' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m9)-[:has_question]->(question)
+        ) 
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '4A10' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m10)-[:has_question]->(question)
+        ) 
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '4A11' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m11)-[:has_question]->(question)
+        ) 
+
+    // 5학년
+        MATCH (m1:MainTopic {code: '5A01'}), (m2:MainTopic {code: '5A02'}), (m3:MainTopic {code: '5A03'}),
+        (m4:MainTopic {code: '5A04'}), (m5:MainTopic {code: '5A05'}), (m6:MainTopic {code: '5A06'}),
+        (m7:MainTopic {code: '5A07'}), (m8:MainTopic {code: '5A08'}), (m9:MainTopic {code: '5A09'}),
+        (m10:MainTopic {code: '5A10'}), (m11:MainTopic {code: '5A11'}), (m12:MainTopic {code: '5A12'})
+        UNWIND [
+            {code: '5A01Q01', question: '12 + 15 × 2는 얼마인가요?', options: ['42', '45', '48', '44'], correct_answer: '42'},
+            {code: '5A01Q02', question: '36 ÷ 4 + 3은 얼마인가요?', options: ['12', '15', '14', '13'], correct_answer: '12'},
+            {code: '5A01Q03', question: '25 × (6 + 2)는 얼마인가요?', options: ['200', '250', '180', '220'], correct_answer: '200'},
+            {code: '5A01Q04', question: '48 ÷ (6 + 2)는 얼마인가요?', options: ['6', '5', '7', '4'], correct_answer: '6'},
+            {code: '5A01Q05', question: '50 ÷ 5 + 6은 얼마인가요?', options: ['16', '14', '13', '15'], correct_answer: '16'},
+
+            {code: '5A02Q01', question: '가장 큰 수는 무엇인가요?', options: ['345', '234', '123', '456'], correct_answer: '456'},
+            {code: '5A02Q02', question: '48 × 7을 가장 가까운 10의 자리에 맞추어 추정하면?', options: ['340', '350', '360', '370'], correct_answer: '330'},
+            {code: '5A02Q03', question: '563 ÷ 9를 가장 가까운 10의 자리에 맞추어 추정하면?', options: ['60', '50', '55', '70'], correct_answer: '60'},
+            {code: '5A02Q04', question: '500에 가장 가까운 수는 무엇인가요?', options: ['493', '505', '460', '530'], correct_answer: '505'},
+            {code: '5A02Q05', question: '298 + 102를 가장 가까운 100의 자리에 맞추어 추정하면?', options: ['400', '300', '500', '600'], correct_answer: '400'},
+
+            {code: '5A03Q01', question: '24의 가장 큰 약수는 무엇인가요?', options: ['24', '12', '6', '8'], correct_answer: '24'},
+            {code: '5A03Q02', question: '다음 중 8의 배수는 무엇인가요?', options: ['16', '15', '18', '20'], correct_answer: '16'},
+            {code: '5A03Q03', question: '4와 6의 최소공배수는 무엇인가요?', options: ['12', '24', '18', '6'], correct_answer: '12'},
+            {code: '5A03Q04', question: '36과 60의 최대공약수는 무엇인가요?', options: ['12', '18', '6', '24'], correct_answer: '12'},
+            {code: '5A03Q05', question: '5와 7의 공배수 중 하나는 무엇인가요?', options: ['35', '50', '70', '75'], correct_answer: '35'},
+
+            {code: '5A04Q01', question: '3/6을 약분하면 무엇인가요?', options: ['1/2', '1/3', '1/4', '2/3'], correct_answer: '1/2'},
+            {code: '5A04Q02', question: '5/10을 약분하면 무엇인가요?', options: ['1/2', '2/5', '1/4', '3/5'], correct_answer: '1/2'},
+            {code: '5A04Q03', question: '1/4와 1/3의 공통 분모는 무엇인가요?', options: ['12', '8', '6', '10'], correct_answer: '12'},
+            {code: '5A04Q04', question: '2/5 + 3/5는 무엇인가요?', options: ['1/5', '4/5', '7/5', '1'], correct_answer: '1'},
+            {code: '5A04Q05', question: '7/9 + 2/9는 무엇인가요?', options: ['9/9', '8/9', '10/9', '7/9'], correct_answer: '9/9'},
+
+            {code: '5A05Q01', question: '1/2 + 2/3은 무엇인가요?', options: ['7/6', '5/6', '4/6', '6/6'], correct_answer: '7/6'},
+            {code: '5A05Q02', question: '3/4 - 1/2는 무엇인가요?', options: ['1/4', '2/4', '3/4', '5/4'], correct_answer: '1/4'},
+            {code: '5A05Q03', question: '2/3 + 4/5는 무엇인가요?', options: ['22/15', '23/15', '24/15', '20/15'], correct_answer: '22/15'},
+            {code: '5A05Q04', question: '7/8 - 3/4는 무엇인가요?', options: ['1/8', '3/8', '5/8', '7/8'], correct_answer: '1/8'},
+            {code: '5A05Q05', question: '5/9 + 4/9는 무엇인가요?', options: ['9/9', '8/9', '10/9', '6/9'], correct_answer: '9/9'},
+
+            {code: '5A06Q01', question: '1/2 × 2/3은 무엇인가요?', options: ['2/6', '1/6', '2/3', '3/6'], correct_answer: '2/6'},
+            {code: '5A06Q02', question: '3/4 × 2/5는 무엇인가요?', options: ['6/20', '2/5', '1/5', '6/10'], correct_answer: '6/20'},
+            {code: '5A06Q03', question: '1/3 × 4/5는 무엇인가요?', options: ['4/15', '2/15', '4/10', '5/12'], correct_answer: '4/15'},
+            {code: '5A06Q04', question: '3/5 × 2/7은 무엇인가요?', options: ['6/35', '9/35', '6/25', '2/5'], correct_answer: '6/35'},
+            {code: '5A06Q05', question: '2/3 × 3/4는 무엇인가요?', options: ['6/12', '3/12', '2/12', '5/12'], correct_answer: '6/12'},
+
+            {code: '5A07Q01', question: '0.5 × 0.6은 무엇인가요?', options: ['0.3', '0.2', '0.6', '0.1'], correct_answer: '0.3'},
+            {code: '5A07Q02', question: '0.7 × 0.8은 무엇인가요?', options: ['0.56', '0.48', '0.64', '0.72'], correct_answer: '0.56'},
+            {code: '5A07Q03', question: '1.2 × 3은 무엇인가요?', options: ['3.4', '3.6', '3.8', '3.9'], correct_answer: '3.6'},
+            {code: '5A07Q04', question: '0.6 × 1.5은 무엇인가요?', options: ['0.9', '1.0', '1.5', '1.2'], correct_answer: '0.9'},
+            {code: '5A07Q05', question: '0.4 × 2.5은 무엇인가요?', options: ['1.0', '1.1', '1.2', '0.8'], correct_answer: '1.0'},
+        
+            {code: '5A08Q01', question: '(2, 4)에 대한 올바른 대응 관계는 무엇인가요?', options: ['(4, 8)', '(3, 6)', '(1, 2)', '(5, 10)'], correct_answer: '(4, 8)'},
+            {code: '5A08Q02', question: 'x = 3일 때, (x, 2x)에서 대응되는 y 값은 무엇인가요?', options: ['3', '6', '9', '2'], correct_answer: '6'},
+            {code: '5A08Q03', question: '(4, 8)에서 y에 해당하는 값은 무엇인가요?', options: ['4', '5', '8', '6'], correct_answer: '8'},
+            {code: '5A08Q04', question: '(2, 4)에서 x에 해당하는 값은 무엇인가요?', options: ['2', '4', '6', '8'], correct_answer: '2'},
+            {code: '5A08Q05', question: '(a, b)가 비율을 나타내고, a = 3일 때, 비율이 3:6이면 b는 무엇인가요?', options: ['2', '6', '3', '4'], correct_answer: '6'},
+
+            {code: '5A09Q01', question: '어떤 도형이 대칭적인가요?', options: ['원', '정삼각형', '정오각형', '전부'], correct_answer: '전부'},
+            {code: '5A09Q02', question: '다음 중 대칭적으로 접을 수 있는 도형은 무엇인가요?', options: ['정사각형', '사다리꼴', '평행사변형', '육각형'], correct_answer: '정사각형'},
+            {code: '5A09Q03', question: '직사각형을 대각선으로 접으면 무엇이 되나요?', options: ['두 개의 삼각형', '두 개의 직사각형', '하나의 정사각형', '두 개의 사다리꼴'], correct_answer: '두 개의 삼각형'},
+            {code: '5A09Q04', question: '합동 도형의 정의는 무엇인가요?', options: ['크기와 모양이 같다', '색깔이 같다', '면적이 같다', '형태가 같다'], correct_answer: '크기와 모양이 같다'},
+            {code: '5A09Q05', question: '다음 중 원래 삼각형과 합동인 것은 무엇인가요?', options: ['같은 크기와 모양의 삼각형', '다른 삼각형', '정사각형', '원'], correct_answer: '같은 크기와 모양의 삼각형'},
+
+            {code: '5A10Q01', question: '정육면체의 모양은 무엇인가요?', options: ['직육면체', '구', '원기둥', '정육면체'], correct_answer: '정육면체'},
+            {code: '5A10Q02', question: '직육면체는 몇 개의 면을 가지나요?', options: ['6', '8', '12', '10'], correct_answer: '6'},
+            {code: '5A10Q03', question: '한 변의 길이가 3cm인 정육면체의 부피는 얼마인가요?', options: ['27 cm³', '9 cm³', '18 cm³', '12 cm³'], correct_answer: '27 cm³'},
+            {code: '5A10Q04', question: '직육면체는 몇 개의 모서리를 가지나요?', options: ['12', '8', '6', '16'], correct_answer: '12'},
+            {code: '5A10Q05', question: '한 변의 길이가 4cm인 정육면체의 표면적은 얼마인가요?', options: ['96 cm²', '64 cm²', '80 cm²', '40 cm²'], correct_answer: '96 cm²'},
+
+            {code: '5A11Q01', question: '길이가 5cm, 너비가 3cm인 직사각형의 둘레는 얼마인가요?', options: ['16 cm', '15 cm', '18 cm', '20 cm'], correct_answer: '16 cm'},
+            {code: '5A11Q02', question: '밑변이 6cm, 높이가 4cm인 삼각형의 넓이는 얼마인가요?', options: ['12 cm²', '10 cm²', '8 cm²', '6 cm²'], correct_answer: '12 cm²'},
+            {code: '5A11Q03', question: '한 변의 길이가 7cm인 정사각형의 둘레는 얼마인가요?', options: ['28 cm', '21 cm', '18 cm', '14 cm'], correct_answer: '28 cm'},
+            {code: '5A11Q04', question: '길이가 8cm, 너비가 5cm인 직사각형의 넓이는 얼마인가요?', options: ['40 cm²', '35 cm²', '45 cm²', '50 cm²'], correct_answer: '40 cm²'},
+            {code: '5A11Q05', question: '변의 길이가 5cm, 6cm, 7cm인 삼각형의 둘레는 얼마인가요?', options: ['18 cm', '20 cm', '15 cm', '12 cm'], correct_answer: '18 cm'},
+
+            {code: '5A12Q01', question: '5, 8, 10의 평균은 얼마인가요?', options: ['7.67', '8.33', '9.0', '7.5'], correct_answer: '7.67'},
+            {code: '5A12Q02', question: '공정한 주사위에서 6이 나올 확률은 얼마인가요?', options: ['1/6', '1/4', '1/2', '1/3'], correct_answer: '1/6'},
+            {code: '5A12Q03', question: '동전을 던졌을 때, 뒷면이 나올 확률은 얼마인가요?', options: ['1/2', '1/4', '1/3', '1/5'], correct_answer: '1/2'},
+            {code: '5A12Q04', question: '12, 15, 18의 평균은 얼마인가요?', options: ['15', '14', '13', '16'], correct_answer: '15'},
+            {code: '5A12Q05', question: '주사위를 던졌을 때, 짝수가 나올 확률은 얼마인가요?', options: ['1/2', '1/3', '1/6', '1/4'], correct_answer: '1/2'}
+        ] AS q
+        WITH m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12, q
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '5A01' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m1)-[:has_question]->(question)
+        )
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '5A02' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m2)-[:has_question]->(question)
+        )        
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '5A03' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m3)-[:has_question]->(question)
+        ) 
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '5A04' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m4)-[:has_question]->(question)
+        ) 
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '5A05' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m5)-[:has_question]->(question)
+        ) 
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '5A06' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m6)-[:has_question]->(question)
+        ) 
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '5A07' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m7)-[:has_question]->(question)
+        ) 
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '5A08' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m8)-[:has_question]->(question)
+        ) 
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '5A09' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m9)-[:has_question]->(question)
+        ) 
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '5A10' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m10)-[:has_question]->(question)
+        ) 
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '5A11' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m11)-[:has_question]->(question)
+        )
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '5A12' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m12)-[:has_question]->(question)
+        )
+
+    // 6학년
+        MATCH (m1:MainTopic {code: '6A01'}), (m2:MainTopic {code: '6A02'}), (m3:MainTopic {code: '6A03'}),
+        (m4:MainTopic {code: '6A04'}), (m5:MainTopic {code: '6A05'}), (m6:MainTopic {code: '6A06'}),
+        (m7:MainTopic {code: '6A07'}), (m8:MainTopic {code: '6A08'}), (m9:MainTopic {code: '6A09'}),
+        (m10:MainTopic {code: '6A10'})
+        UNWIND [
+            {code: '6A01Q01', question: '3/4 ÷ 2는 얼마인가요?', options: ['3/8', '1/2', '3/2', '1/4'], correct_answer: '3/8'},
+            {code: '6A01Q02', question: '5/6 ÷ 1/2는 얼마인가요?', options: ['5/3', '10/6', '1/3', '2/3'], correct_answer: '5/3'},
+            {code: '6A01Q03', question: '7/8 ÷ 3/4는 얼마인가요?', options: ['7/6', '28/24', '1/2', '1/3'], correct_answer: '7/6'},
+            {code: '6A01Q04', question: '2/3 ÷ 4/5는 얼마인가요?', options: ['5/12', '8/15', '3/8', '5/8'], correct_answer: '5/12'},
+            {code: '6A01Q05', question: '1/2 ÷ 3/4는 얼마인가요?', options: ['2/3', '3/2', '1/6', '4/6'], correct_answer: '2/3'},
+
+            {code: '6A02Q01', question: '0.6 ÷ 0.3은 얼마인가요?', options: ['2', '1', '1.5', '0.9'], correct_answer: '2'},
+            {code: '6A02Q02', question: '1.2 ÷ 0.4는 얼마인가요?', options: ['3', '2', '1.5', '2.5'], correct_answer: '3'},
+            {code: '6A02Q03', question: '0.75 ÷ 0.5는 얼마인가요?', options: ['1.5', '1', '2', '0.5'], correct_answer: '1.5'},
+            {code: '6A02Q04', question: '2.5 ÷ 0.5는 얼마인가요?', options: ['5', '4', '3', '2'], correct_answer: '5'},
+            {code: '6A02Q05', question: '0.9 ÷ 0.3은 얼마인가요?', options: ['2', '3', '4', '1'], correct_answer: '3'},
+
+            {code: '6A03Q01', question: '3개의 사과와 6개의 오렌지의 비율은 무엇인가요?', options: ['3:6', '1:2', '2:3', '1:3'], correct_answer: '1:2'},
+            {code: '6A03Q02', question: '4개의 빨간 구슬과 12개의 파란 구슬이 있을 때, 빨간 구슬과 파란 구슬의 비율은 무엇인가요?', options: ['1:3', '1:4', '2:3', '3:1'], correct_answer: '1:3'},
+            {code: '6A03Q03', question: '5명의 여자아이와 10명의 남자아이의 비율은 무엇인가요?', options: ['5:10', '1:2', '2:5', '1:5'], correct_answer: '1:2'},
+            {code: '6A03Q04', question: '7마리의 고양이와 14마리의 개가 있을 때, 고양이와 개의 비율은 무엇인가요?', options: ['7:14', '1:2', '2:1', '1:3'], correct_answer: '1:2'},
+            {code: '6A03Q05', question: '15개의 연필과 25개의 펜의 비율은 무엇인가요?', options: ['3:5', '1:2', '5:3', '2:5'], correct_answer: '3:5'},
+
+            {code: '6A04Q01', question: 'x/6 = 2/3 일 때, x의 값은 무엇인가요?', options: ['4', '6', '12', '9'], correct_answer: '4'},
+            {code: '6A04Q02', question: '3/4 = x/8 일 때, x의 값은 무엇인가요?', options: ['6', '8', '4', '3'], correct_answer: '6'},
+            {code: '6A04Q03', question: '4/y = 1/3 일 때, y의 값은 무엇인가요?', options: ['12', '4', '6', '3'], correct_answer: '12'},
+            {code: '6A04Q04', question: '2/5 = x/15 일 때, x의 값은 무엇인가요?', options: ['6', '5', '8', '9'], correct_answer: '6'},
+            {code: '6A04Q05', question: '7/8 = x/32 일 때, x의 값은 무엇인가요?', options: ['28', '35', '30', '26'], correct_answer: '28'},
+ 
+            {code: '6A05Q01', question: '각기둥의 모양은 무엇인가요?', options: ['직사각형 기둥', '피라미드', '정육면체', '원기둥'], correct_answer: '직사각형 기둥'},
+            {code: '6A05Q02', question: '정사각형 피라미드는 몇 개의 면을 가지고 있나요?', options: ['5', '4', '6', '8'], correct_answer: '5'},
+            {code: '6A05Q03', question: '삼각기둥은 몇 개의 모서리를 가지고 있나요?', options: ['9', '6', '12', '10'], correct_answer: '9'},
+            {code: '6A05Q04', question: '직사각형 기둥은 몇 개의 꼭짓점을 가지고 있나요?', options: ['8', '6', '4', '12'], correct_answer: '8'},
+            {code: '6A05Q05', question: '원뿔은 몇 개의 면을 가지고 있나요?', options: ['1', '2', '3', '4'], correct_answer: '2'},
+
+            {code: '6A06Q01', question: '반지름 3cm, 높이 5cm인 원기둥의 부피는 얼마인가요?', options: ['45π cm³', '30π cm³', '60π cm³', '90π cm³'], correct_answer: '45π cm³'},
+            {code: '6A06Q02', question: '반지름 4cm, 높이 6cm인 원뿔의 표면적은 얼마인가요?', options: ['32π cm²', '48π cm²', '56π cm²', '64π cm²'], correct_answer: '32π cm²'},
+            {code: '6A06Q03', question: '반지름 3cm인 구의 부피는 얼마인가요?', options: ['36π cm³', '27π cm³', '72π cm³', '81π cm³'], correct_answer: '36π cm³'},
+            {code: '6A06Q04', question: '원기둥의 부피는 어떤 공식으로 구하나요?', options: ['πr²h', '2πrh', 'πr³h', 'πr²'], correct_answer: 'πr²h'},
+            {code: '6A06Q05', question: '원뿔의 부피는 어떤 공식으로 구하나요?', options: ['1/3πr²h', 'πr²h', 'πr³', 'πr²'], correct_answer: '1/3πr²h'},
+
+            {code: '6A07Q01', question: '한 변의 길이가 4 cm인 정육면체의 부피는 얼마인가요?', options: ['64 cm³', '16 cm³', '32 cm³', '20 cm³'], correct_answer: '64 cm³'},
+            {code: '6A07Q02', question: '크기가 2 cm x 3 cm x 4 cm인 직육면체의 겉넓이는 얼마인가요?', options: ['52 cm²', '48 cm²', '42 cm²', '56 cm²'], correct_answer: '52 cm²'},
+            {code: '6A07Q03', question: '크기가 2 cm x 3 cm x 5 cm인 직육면체의 부피는 얼마인가요?', options: ['30 cm³', '35 cm³', '40 cm³', '50 cm³'], correct_answer: '30 cm³'},
+            {code: '6A07Q04', question: '한 변의 길이가 3 cm인 정육면체의 겉넓이는 얼마인가요?', options: ['54 cm²', '60 cm²', '72 cm²', '48 cm²'], correct_answer: '54 cm²'},
+            {code: '6A07Q05', question: '반지름이 4 cm인 구의 부피는 얼마인가요?', options: ['64π cm³', '48π cm³', '80π cm³', '96π cm³'], correct_answer: '64π cm³'},
+
+            {code: '6A08Q01', question: '반지름이 5 cm인 원의 넓이는 얼마인가요?', options: ['25π cm²', '20π cm²', '30π cm²', '10π cm²'], correct_answer: '25π cm²'},
+            {code: '6A08Q02', question: '지름이 10 cm인 원의 원주 길이는 얼마인가요?', options: ['10π cm', '5π cm', '15π cm', '20π cm'], correct_answer: '10π cm'},
+            {code: '6A08Q03', question: '반지름이 7 cm인 원의 넓이는 얼마인가요?', options: ['49π cm²', '50π cm²', '56π cm²', '63π cm²'], correct_answer: '49π cm²'},
+            {code: '6A08Q04', question: '반지름이 4 cm인 원의 원주 길이는 얼마인가요?', options: ['8π cm', '16π cm', '12π cm', '6π cm'], correct_answer: '8π cm'},
+            {code: '6A08Q05', question: '반지름이 3 cm인 원의 넓이는 얼마인가요?', options: ['9π cm²', '6π cm²', '12π cm²', '18π cm²'], correct_answer: '9π cm²'},
+
+            {code: '6A09Q01', question: '크기가 2 cm x 3 cm x 4 cm인 직육면체의 겉넓이는 얼마인가요?', options: ['52 cm²', '48 cm²', '42 cm²', '56 cm²'], correct_answer: '52 cm²'},
+            {code: '6A09Q02', question: '크기가 2 cm x 3 cm x 4 cm인 직육면체의 부피는 얼마인가요?', options: ['24 cm³', '28 cm³', '30 cm³', '36 cm³'], correct_answer: '24 cm³'},
+            {code: '6A09Q03', question: '한 변의 길이가 4 cm인 정육면체의 겉넓이는 얼마인가요?', options: ['96 cm²', '84 cm²', '72 cm²', '64 cm²'], correct_answer: '96 cm²'},
+            {code: '6A09Q04', question: '한 변의 길이가 5 cm인 정육면체의 부피는 얼마인가요?', options: ['125 cm³', '100 cm³', '150 cm³', '200 cm³'], correct_answer: '125 cm³'},
+            {code: '6A09Q05', question: '한 변의 길이가 3 cm인 정육면체의 겉넓이는 얼마인가요?', options: ['54 cm²', '60 cm²', '72 cm²', '48 cm²'], correct_answer: '54 cm²'},
+
+            {code: '6A10Q01', question: '원에서 전체 각도는 얼마인가요?', options: ['360°', '180°', '270°', '90°'], correct_answer: '360°'},
+            {code: '6A10Q02', question: '90° 각도를 나타내는 원의 비율은 얼마인가요?', options: ['1/4', '1/2', '1/3', '1/6'], correct_answer: '1/4'},
+            {code: '6A10Q03', question: '원그래프에서 각 부문은 무엇을 나타내나요?', options: ['하나의 범주나 값', '전체 면적', '전체 원', '색상'], correct_answer: '하나의 범주나 값'},
+            {code: '6A10Q04', question: '원그래프에서 원의 1/4을 나타내는 부문은 몇 도인가요?', options: ['90°', '45°', '60°', '120°'], correct_answer: '90°'},
+            {code: '6A10Q05', question: '원그래프에서 전체 원을 몇 개의 부문으로 나눌 수 있나요?', options: ['아무 개수나', '4', '2', '360'], correct_answer: '아무 개수나'}
+        ] AS q
+        WITH m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, q
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '6A01' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m1)-[:has_question]->(question)
+        )
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '6A02' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m2)-[:has_question]->(question)
+        )        
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '6A03' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m3)-[:has_question]->(question)
+        ) 
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '6A04' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m4)-[:has_question]->(question)
+        ) 
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '6A05' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m5)-[:has_question]->(question)
+        ) 
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '6A06' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m6)-[:has_question]->(question)
+        ) 
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '6A07' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m7)-[:has_question]->(question)
+        ) 
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '6A08' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m8)-[:has_question]->(question)
+        ) 
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '6A09' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m9)-[:has_question]->(question)
+        ) 
+        FOREACH (_ IN CASE WHEN q.code STARTS WITH '6A10' THEN [1] ELSE [] END |
+            CREATE (question:Question {code: q.code, question: q.question, options: q.options, correct_answer: q.correct_answer})
+            CREATE (m10)-[:has_question]->(question)
+        ) 
+
+// 학생별 문항 풀이 이력 관계 생성
+    // 3학년
+        UNWIND [
+        {code: '3A01Q01', solving_time: '2024-11-19T14:30:00Z', completion_time: '2024-11-19T14:35:00Z', time_taken: 5, score: 10, feedback: '잘했어!', solving_duration: 5},
+        {code: '3A01Q02', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '3A01Q03', solving_time: '2024-11-19T14:50:00Z', completion_time: '2024-11-19T14:55:00Z', time_taken: 5, score: 7, feedback: '잘할 수 있어!', solving_duration: 5},
+        {code: '3A01Q04', solving_time: '2024-11-19T15:00:00Z', completion_time: '2024-11-19T15:05:00Z', time_taken: 5, score: 9, feedback: '참 잘했어요.', solving_duration: 5},
+        {code: '3A01Q05', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        
+        {code: '3A02Q01', solving_time: '2024-11-19T15:20:00Z', completion_time: '2024-11-19T15:25:00Z', time_taken: 5, score: 6, feedback: '다시 해볼까?', solving_duration: 5},
+        {code: '3A02Q02', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '3A02Q03', solving_time: '2024-11-19T15:40:00Z', completion_time: '2024-11-19T15:45:00Z', time_taken: 5, score: 8, feedback: '좋은 점수인걸?', solving_duration: 5},
+        {code: '3A02Q04', solving_time: '2024-11-19T15:50:00Z', completion_time: '2024-11-19T15:55:00Z', time_taken: 5, score: 9, feedback: '정말 잘했어.', solving_duration: 5},
+        {code: '3A02Q05', solving_time: '2024-11-19T16:00:00Z', completion_time: '2024-11-19T16:05:00Z', time_taken: 5, score: 10, feedback: '완벽해!', solving_duration: 5},
+
+        {code: '3A03Q01', solving_time: '2024-11-19T16:10:00Z', completion_time: '2024-11-19T16:15:00Z', time_taken: 5, score: 10, feedback: '대단해!', solving_duration: 5},
+        {code: '3A03Q02', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '3A03Q03', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '3A03Q04', solving_time: '2024-11-19T16:40:00Z', completion_time: '2024-11-19T16:45:00Z', time_taken: 5, score: 9, feedback: '참 잘했어요.', solving_duration: 5},
+        {code: '3A03Q05', solving_time: '2024-11-19T16:50:00Z', completion_time: '2024-11-19T16:55:00Z', time_taken: 5, score: 10, feedback: '좋아!', solving_duration: 5},
+
+        {code: '3A04Q01', solving_time: '2024-11-19T17:00:00Z', completion_time: '2024-11-19T17:05:00Z', time_taken: 5, score: 6, feedback: '다시 학습해 볼까?', solving_duration: 5},
+        {code: '3A04Q02', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '3A04Q03', solving_time: '2024-11-19T17:20:00Z', completion_time: '2024-11-19T17:25:00Z', time_taken: 5, score: 8, feedback: '잘하는데?', solving_duration: 5},
+        {code: '3A04Q04', solving_time: '2024-11-19T17:30:00Z', completion_time: '2024-11-19T17:35:00Z', time_taken: 5, score: 9, feedback: '정말 잘했어.', solving_duration: 5},
+        {code: '3A04Q05', solving_time: '2024-11-19T17:40:00Z', completion_time: '2024-11-19T17:45:00Z', time_taken: 5, score: 10, feedback: '완벽해!', solving_duration: 5},
+
+        {code: '3A05Q01', solving_time: '2024-11-19T17:50:00Z', completion_time: '2024-11-19T17:55:00Z', time_taken: 5, score: 10, feedback: '좋아!', solving_duration: 5},
+        {code: '3A05Q02', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '3A05Q03', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '3A05Q04', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '3A05Q05', solving_time: '2024-11-19T18:30:00Z', completion_time: '2024-11-19T18:35:00Z', time_taken: 5, score: 10, feedback: '대단해!', solving_duration: 5},
+
+        {code: '3A06Q01', solving_time: '2024-11-19T18:40:00Z', completion_time: '2024-11-19T18:45:00Z', time_taken: 5, score: 6, feedback: '다시 해볼까?', solving_duration: 5},
+        {code: '3A06Q02', solving_time: '2024-11-19T18:50:00Z', completion_time: '2024-11-19T18:55:00Z', time_taken: 5, score: 7, feedback: '좋은 시도였어.', solving_duration: 5},
+        {code: '3A06Q03', solving_time: '2024-11-19T19:00:00Z', completion_time: '2024-11-19T19:05:00Z', time_taken: 5, score: 8, feedback: '잘하는데?', solving_duration: 5},
+        {code: '3A06Q04', solving_time: '2024-11-19T19:10:00Z', completion_time: '2024-11-19T19:15:00Z', time_taken: 5, score: 9, feedback: '참 잘했어요.', solving_duration: 5},
+        {code: '3A06Q05', solving_time: '2024-11-19T19:20:00Z', completion_time: '2024-11-19T19:25:00Z', time_taken: 5, score: 10, feedback: '정말 좋아.', solving_duration: 5},
+
+        {code: '3A07Q01', solving_time: '2024-11-19T19:30:00Z', completion_time: '2024-11-19T19:35:00Z', time_taken: 5, score: 9, feedback: '대단해!', solving_duration: 5},
+        {code: '3A07Q02', solving_time: '2024-11-19T19:40:00Z', completion_time: '2024-11-19T19:45:00Z', time_taken: 5, score: 7, feedback: '거의 다 왔어!', solving_duration: 5},
+        {code: '3A07Q03', solving_time: '2024-11-19T19:50:00Z', completion_time: '2024-11-19T19:55:00Z', time_taken: 5, score: 6, feedback: '잘할 수 있어!', solving_duration: 5},
+        {code: '3A07Q04', solving_time: '2024-11-19T20:00:00Z', completion_time: '2024-11-19T20:05:00Z', time_taken: 5, score: 8, feedback: '좋은 점수인걸?', solving_duration: 5},
+        {code: '3A07Q05', solving_time: '2024-11-19T20:10:00Z', completion_time: '2024-11-19T20:15:00Z', time_taken: 5, score: 10, feedback: '완벽해!', solving_duration: 5},
+
+        {code: '3A08Q01', solving_time: '2024-11-19T20:20:00Z', completion_time: '2024-11-19T20:25:00Z', time_taken: 5, score: 10, feedback: '참 잘했어요.', solving_duration: 5},
+        {code: '3A08Q02', solving_time: '2024-11-19T20:30:00Z', completion_time: '2024-11-19T20:35:00Z', time_taken: 5, score: 9, feedback: '잘했어!', solving_duration: 5},
+        {code: '3A08Q03', solving_time: '2024-11-19T20:40:00Z', completion_time: '2024-11-19T20:45:00Z', time_taken: 5, score: 8, feedback: '좋은 시도였어.', solving_duration: 5},
+        {code: '3A08Q04', solving_time: '2024-11-19T20:50:00Z', completion_time: '2024-11-19T20:55:00Z', time_taken: 5, score: 7, feedback: '좋은 점수인걸?', solving_duration: 5},
+        {code: '3A08Q05', solving_time: '2024-11-19T21:00:00Z', completion_time: '2024-11-19T21:05:00Z', time_taken: 5, score: 10, feedback: '대단해!', solving_duration: 5}
+        ] AS q
+        MATCH (student:Person {name: '김지원'})
+        MATCH (question:Question)
+        WHERE question.code = q.code
+        FOREACH (_ IN CASE WHEN q.solving_time IS NOT NULL THEN [1] ELSE [] END |
+        CREATE (student)-[:SOLVED {
+            question_code: q.code,
+            is_correct: q.is_correct,
+            solving_time: q.solving_time,
+            completion_time: q.completion_time,
+            time_taken: q.time_taken,
+            score: q.score,
+            feedback: q.feedback,
+            solving_duration: q.solving_duration
+        }]->(question)
+        )
+        FOREACH (_ IN CASE WHEN q.solving_time IS NULL THEN [1] ELSE [] END |
+        CREATE (student)-[:UNSOLVED {
+            question_code: q.code,
+            solving_time: null,
+            completion_time: null,
+            time_taken: null,
+            score: null,
+            feedback: null,
+            solving_duration: null,
+            is_correct: null
+        }]->(question)
+        );
+
+        UNWIND [
+        {code: '3A01Q01', solving_time: '2024-11-19T15:30:00Z', completion_time: '2024-11-19T15:35:00Z', time_taken: 5, score: 9, feedback: '좋아!', solving_duration: 5},
+        {code: '3A01Q02', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '3A01Q03', solving_time: '2024-11-19T15:50:00Z', completion_time: '2024-11-19T15:55:00Z', time_taken: 5, score: 7, feedback: '좋은 시도였어.', solving_duration: 5},
+        {code: '3A01Q04', solving_time: '2024-11-19T16:00:00Z', completion_time: '2024-11-19T16:05:00Z', time_taken: 5, score: 6, feedback: '잘할 수 있어!', solving_duration: 5},
+        {code: '3A01Q05', solving_time: '2024-11-19T16:10:00Z', completion_time: '2024-11-19T16:15:00Z', time_taken: 5, score: 10, feedback: '대단해!', solving_duration: 5},
+
+        {code: '3A02Q01', solving_time: '2024-11-19T16:20:00Z', completion_time: '2024-11-19T16:25:00Z', time_taken: 5, score: 10, feedback: '참 잘했어요.', solving_duration: 5},
+        {code: '3A02Q02', solving_time: '2024-11-19T16:30:00Z', completion_time: '2024-11-19T16:35:00Z', time_taken: 5, score: 9, feedback: '정말 좋아.', solving_duration: 5},
+        {code: '3A02Q03', solving_time: '2024-11-19T16:40:00Z', completion_time: '2024-11-19T16:45:00Z', time_taken: 5, score: 8, feedback: '잘하는데?', solving_duration: 5},
+        {code: '3A02Q04', solving_time: '2024-11-19T16:50:00Z', completion_time: '2024-11-19T16:55:00Z', time_taken: 5, score: 7, feedback: '잘했네!', solving_duration: 5},
+        {code: '3A02Q05', solving_time: '2024-11-19T17:00:00Z', completion_time: '2024-11-19T17:05:00Z', time_taken: 5, score: 6, feedback: '다시 해볼까?', solving_duration: 5},
+
+        {code: '3A03Q01', solving_time: '2024-11-19T17:10:00Z', completion_time: '2024-11-19T17:15:00Z', time_taken: 5, score: 8, feedback: '정말 잘했어.', solving_duration: 5},
+        {code: '3A03Q02', solving_time: '2024-11-19T17:20:00Z', completion_time: '2024-11-19T17:25:00Z', time_taken: 5, score: 7, feedback: '좋은 점수인걸?', solving_duration: 5},
+        {code: '3A03Q03', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '3A03Q04', solving_time: '2024-11-19T17:40:00Z', completion_time: '2024-11-19T17:45:00Z', time_taken: 5, score: 6, feedback: '더 잘할 수 있어.', solving_duration: 5},
+        {code: '3A03Q05', solving_time: '2024-11-19T17:50:00Z', completion_time: '2024-11-19T17:55:00Z', time_taken: 5, score: 10, feedback: '완벽해!', solving_duration: 5},
+
+        {code: '3A04Q01', solving_time: '2024-11-19T18:00:00Z', completion_time: '2024-11-19T18:05:00Z', time_taken: 5, score: 9, feedback: '좋아!', solving_duration: 5},
+        {code: '3A04Q02', solving_time: '2024-11-19T18:10:00Z', completion_time: '2024-11-19T18:15:00Z', time_taken: 5, score: 8, feedback: '정말 잘했어.', solving_duration: 5},
+        {code: '3A04Q03', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '3A04Q04', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '3A04Q05', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+
+        {code: '3A05Q01', solving_time: '2024-11-19T17:50:00Z', completion_time: '2024-11-19T17:55:00Z', time_taken: 5, score: 10, feedback: '좋아!', solving_duration: 5},
+        {code: '3A05Q02', solving_time: '2024-11-19T18:00:00Z', completion_time: '2024-11-19T18:05:00Z', time_taken: 5, score: 9, feedback: '정말 잘했어.', solving_duration: 5},
+        {code: '3A05Q03', solving_time: '2024-11-19T18:10:00Z', completion_time: '2024-11-19T18:15:00Z', time_taken: 5, score: 8, feedback: '좋은 점수인걸?', solving_duration: 5},
+        {code: '3A05Q04', solving_time: '2024-11-19T18:20:00Z', completion_time: '2024-11-19T18:25:00Z', time_taken: 5, score: 7, feedback: '조금만 더 해보자.', solving_duration: 5},
+        {code: '3A05Q05', solving_time: '2024-11-19T18:30:00Z', completion_time: '2024-11-19T18:35:00Z', time_taken: 5, score: 10, feedback: '대단해!', solving_duration: 5},
+
+        {code: '3A06Q01', solving_time: '2024-11-19T18:40:00Z', completion_time: '2024-11-19T18:45:00Z', time_taken: 5, score: 6, feedback: '다시 해볼까?', solving_duration: 5},
+        {code: '3A06Q02', solving_time: '2024-11-19T18:50:00Z', completion_time: '2024-11-19T18:55:00Z', time_taken: 5, score: 7, feedback: '좋은 시도였어.', solving_duration: 5},
+        {code: '3A06Q03', solving_time: '2024-11-19T19:00:00Z', completion_time: '2024-11-19T19:05:00Z', time_taken: 5, score: 8, feedback: '잘하는데?', solving_duration: 5},
+        {code: '3A06Q04', solving_time: '2024-11-19T19:10:00Z', completion_time: '2024-11-19T19:15:00Z', time_taken: 5, score: 9, feedback: '참 잘했어요.', solving_duration: 5},
+        {code: '3A06Q05', solving_time: '2024-11-19T19:20:00Z', completion_time: '2024-11-19T19:25:00Z', time_taken: 5, score: 10, feedback: '정말 좋아.', solving_duration: 5},
+
+        {code: '3A07Q01', solving_time: '2024-11-19T19:30:00Z', completion_time: '2024-11-19T19:35:00Z', time_taken: 5, score: 9, feedback: '대단해!', solving_duration: 5},
+        {code: '3A07Q02', solving_time: '2024-11-19T19:40:00Z', completion_time: '2024-11-19T19:45:00Z', time_taken: 5, score: 7, feedback: '거의 다 왔어!', solving_duration: 5},
+        {code: '3A07Q03', solving_time: '2024-11-19T19:50:00Z', completion_time: '2024-11-19T19:55:00Z', time_taken: 5, score: 6, feedback: '잘할 수 있어!', solving_duration: 5},
+        {code: '3A07Q04', solving_time: '2024-11-19T20:00:00Z', completion_time: '2024-11-19T20:05:00Z', time_taken: 5, score: 8, feedback: '좋은 점수인걸?', solving_duration: 5},
+        {code: '3A07Q05', solving_time: '2024-11-19T20:10:00Z', completion_time: '2024-11-19T20:15:00Z', time_taken: 5, score: 10, feedback: '완벽해!', solving_duration: 5},
+
+        {code: '3A08Q01', solving_time: '2024-11-19T20:20:00Z', completion_time: '2024-11-19T20:25:00Z', time_taken: 5, score: 10, feedback: '참 잘했어요.', solving_duration: 5},
+        {code: '3A08Q02', solving_time: '2024-11-19T20:30:00Z', completion_time: '2024-11-19T20:35:00Z', time_taken: 5, score: 9, feedback: '잘했어!', solving_duration: 5},
+        {code: '3A08Q03', solving_time: '2024-11-19T20:40:00Z', completion_time: '2024-11-19T20:45:00Z', time_taken: 5, score: 8, feedback: '좋은 시도였어.', solving_duration: 5},
+        {code: '3A08Q04', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '3A08Q05', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null}
+        ] AS q
+        MATCH (student:Person {name: '이도현'})
+        MATCH (question:Question)
+        WHERE question.code = q.code
+        FOREACH (_ IN CASE WHEN q.solving_time IS NOT NULL THEN [1] ELSE [] END |
+        CREATE (student)-[:SOLVED {
+            question_code: q.code,
+            is_correct: q.is_correct,
+            solving_time: q.solving_time,
+            completion_time: q.completion_time,
+            time_taken: q.time_taken,
+            score: q.score,
+            feedback: q.feedback,
+            solving_duration: q.solving_duration
+        }]->(question)
+        )
+        FOREACH (_ IN CASE WHEN q.solving_time IS NULL THEN [1] ELSE [] END |
+        CREATE (student)-[:UNSOLVED {
+            question_code: q.code,
+            solving_time: null,
+            completion_time: null,
+            time_taken: null,
+            score: null,
+            feedback: null,
+            solving_duration: null,
+            is_correct: null
+        }]->(question)
+        );
+    // 4학년
+        UNWIND [
+        {code: '4A01Q01', solving_time: '2024-11-19T23:00:00Z', completion_time: '2024-11-19T23:05:00Z', time_taken: 5, score: 8, feedback: '정말 잘했어.', solving_duration: 5},
+        {code: '4A01Q02', solving_time: '2024-11-19T23:10:00Z', completion_time: '2024-11-19T23:15:00Z', time_taken: 5, score: 7, feedback: '좋은 점수인걸?', solving_duration: 5},
+        {code: '4A01Q03', solving_time: '2024-11-19T23:20:00Z', completion_time: '2024-11-19T23:25:00Z', time_taken: 5, score: 9, feedback: '참 잘했어요.', solving_duration: 5},
+        {code: '4A01Q04', solving_time: '2024-11-19T23:30:00Z', completion_time: '2024-11-19T23:35:00Z', time_taken: 5, score: 10, feedback: '대단해!', solving_duration: 5},
+        {code: '4A01Q05', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+
+        {code: '4A02Q01', solving_time: '2024-11-19T23:50:00Z', completion_time: '2024-11-19T23:55:00Z', time_taken: 5, score: 9, feedback: '정말 좋아.', solving_duration: 5},
+        {code: '4A02Q02', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '4A02Q03', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '4A02Q04', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '4A02Q05', solving_time: '2024-11-20T00:30:00Z', completion_time: '2024-11-20T00:35:00Z', time_taken: 5, score: 10, feedback: '완벽해!', solving_duration: 5},
+
+        {code: '4A03Q01', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '4A03Q02', solving_time: '2024-11-20T00:50:00Z', completion_time: '2024-11-20T00:55:00Z', time_taken: 5, score: 8, feedback: '정말 잘했어.', solving_duration: 5},
+        {code: '4A03Q03', solving_time: '2024-11-20T01:00:00Z', completion_time: '2024-11-20T01:05:00Z', time_taken: 5, score: 10, feedback: '대단해!', solving_duration: 5},
+        {code: '4A03Q04', solving_time: '2024-11-20T01:10:00Z', completion_time: '2024-11-20T01:15:00Z', time_taken: 5, score: 7, feedback: '좋은 점수인걸?', solving_duration: 5},
+        {code: '4A03Q05', solving_time: '2024-11-20T01:20:00Z', completion_time: '2024-11-20T01:25:00Z', time_taken: 5, score: 6, feedback: '다시 해볼까?', solving_duration: 5},
+
+        {code: '4A04Q01', solving_time: '2024-11-20T01:30:00Z', completion_time: '2024-11-20T01:35:00Z', time_taken: 5, score: 10, feedback: '완벽해!', solving_duration: 5},
+        {code: '4A04Q02', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '4A04Q03', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '4A04Q04', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '4A04Q05', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        
+        {code: '4A05Q01', solving_time: '2024-11-20T02:20:00Z', completion_time: '2024-11-20T02:25:00Z', time_taken: 5, score: 9, feedback: '참 잘했어요.', solving_duration: 5},
+        {code: '4A05Q02', solving_time: '2024-11-20T02:30:00Z', completion_time: '2024-11-20T02:35:00Z', time_taken: 5, score: 7, feedback: '좋은 시도였어.', solving_duration: 5},
+        {code: '4A05Q03', solving_time: '2024-11-20T02:40:00Z', completion_time: '2024-11-20T02:45:00Z', time_taken: 5, score: 10, feedback: '완벽해!', solving_duration: 5},
+        {code: '4A05Q04', solving_time: '2024-11-20T02:50:00Z', completion_time: '2024-11-20T02:55:00Z', time_taken: 5, score: 8, feedback: '정말 좋아.', solving_duration: 5},
+        {code: '4A05Q05', solving_time: '2024-11-20T03:00:00Z', completion_time: '2024-11-20T03:05:00Z', time_taken: 5, score: 6, feedback: '다시 해볼까?', solving_duration: 5},
+
+        {code: '4A06Q01', solving_time: '2024-11-20T03:10:00Z', completion_time: '2024-11-20T03:15:00Z', time_taken: 5, score: 9, feedback: '많이 노력했구나!', solving_duration: 5},
+        {code: '4A06Q02', solving_time: '2024-11-20T03:20:00Z', completion_time: '2024-11-20T03:25:00Z', time_taken: 5, score: 7, feedback: '잘하는데?', solving_duration: 5},
+        {code: '4A06Q03', solving_time: '2024-11-20T03:30:00Z', completion_time: '2024-11-20T03:35:00Z', time_taken: 5, score: 10, feedback: '대단해!', solving_duration: 5},
+        {code: '4A06Q04', solving_time: '2024-11-20T03:40:00Z', completion_time: '2024-11-20T03:45:00Z', time_taken: 5, score: 6, feedback: '좀 더 해볼까?', solving_duration: 5},
+        {code: '4A06Q05', solving_time: '2024-11-20T03:50:00Z', completion_time: '2024-11-20T03:55:00Z', time_taken: 5, score: 8, feedback: '좋은 시도야.', solving_duration: 5},
+
+        {code: '4A07Q01', solving_time: '2024-11-20T04:00:00Z', completion_time: '2024-11-20T04:05:00Z', time_taken: 5, score: 9, feedback: '대단해!', solving_duration: 5},
+        {code: '4A07Q02', solving_time: '2024-11-20T04:10:00Z', completion_time: '2024-11-20T04:15:00Z', time_taken: 5, score: 7, feedback: '잘했구나', solving_duration: 5},
+        {code: '4A07Q03', solving_time: '2024-11-20T04:20:00Z', completion_time: '2024-11-20T04:25:00Z', time_taken: 5, score: 6, feedback: '지금처럼 계속 해볼까?', solving_duration: 5},
+        {code: '4A07Q04', solving_time: '2024-11-20T04:30:00Z', completion_time: '2024-11-20T04:35:00Z', time_taken: 5, score: 10, feedback: '완벽해!', solving_duration: 5},
+        {code: '4A07Q05', solving_time: '2024-11-20T04:40:00Z', completion_time: '2024-11-20T04:45:00Z', time_taken: 5, score: 8, feedback: '잘했어!', solving_duration: 5},
+
+        {code: '4A08Q01', solving_time: '2024-11-20T04:50:00Z', completion_time: '2024-11-20T04:55:00Z', time_taken: 5, score: 6, feedback: '다시 해볼까?', solving_duration: 5},
+        {code: '4A08Q02', solving_time: '2024-11-20T05:00:00Z', completion_time: '2024-11-20T05:05:00Z', time_taken: 5, score: 10, feedback: '대단해!', solving_duration: 5},
+        {code: '4A08Q03', solving_time: '2024-11-20T05:10:00Z', completion_time: '2024-11-20T05:15:00Z', time_taken: 5, score: 9, feedback: '참 잘했어요.', solving_duration: 5},
+        {code: '4A08Q04', solving_time: '2024-11-20T05:20:00Z', completion_time: '2024-11-20T05:25:00Z', time_taken: 5, score: 7, feedback: '잘하는데?', solving_duration: 5},
+        {code: '4A08Q05', solving_time: '2024-11-20T05:30:00Z', completion_time: '2024-11-20T05:35:00Z', time_taken: 5, score: 8, feedback: '정말 잘했어.', solving_duration: 5},
+
+        {code: '4A09Q01', solving_time: '2024-11-20T05:40:00Z', completion_time: '2024-11-20T05:45:00Z', time_taken: 5, score: 9, feedback: '많이 노력했구나!', solving_duration: 5},
+        {code: '4A09Q02', solving_time: '2024-11-20T05:50:00Z', completion_time: '2024-11-20T05:55:00Z', time_taken: 5, score: 7, feedback: '좋아!', solving_duration: 5},
+        {code: '4A09Q03', solving_time: '2024-11-20T06:00:00Z', completion_time: '2024-11-20T06:05:00Z', time_taken: 5, score: 8, feedback: '잘했어!', solving_duration: 5},
+        {code: '4A09Q04', solving_time: '2024-11-20T06:10:00Z', completion_time: '2024-11-20T06:15:00Z', time_taken: 5, score: 6, feedback: '좀 더 해볼까?', solving_duration: 5},
+        {code: '4A09Q05', solving_time: '2024-11-20T06:20:00Z', completion_time: '2024-11-20T06:25:00Z', time_taken: 5, score: 10, feedback: '대단해!', solving_duration: 5},
+
+        {code: '4A10Q01', solving_time: '2024-11-20T06:30:00Z', completion_time: '2024-11-20T06:35:00Z', time_taken: 5, score: 9, feedback: '참 잘했어요.', solving_duration: 5},
+        {code: '4A10Q02', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '4A10Q03', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '4A10Q04', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '4A10Q05', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+
+        {code: '4A11Q01', solving_time: '2024-11-20T07:20:00Z', completion_time: '2024-11-20T07:25:00Z', time_taken: 5, score: 9, feedback: '대단해!', solving_duration: 5},
+        {code: '4A11Q02', solving_time: '2024-11-20T07:30:00Z', completion_time: '2024-11-20T07:35:00Z', time_taken: 5, score: 8, feedback: '잘했어!', solving_duration: 5},
+        {code: '4A11Q03', solving_time: '2024-11-20T07:40:00Z', completion_time: '2024-11-20T07:45:00Z', time_taken: 5, score: 7, feedback: '잘했구나', solving_duration: 5},
+        {code: '4A11Q04', solving_time: '2024-11-20T07:50:00Z', completion_time: '2024-11-20T07:55:00Z', time_taken: 5, score: 9, feedback: '참 잘했어요.', solving_duration: 5},
+        {code: '4A11Q05', solving_time: '2024-11-20T08:00:00Z', completion_time: '2024-11-20T08:05:00Z', time_taken: 5, score: 6, feedback: '다시 해볼까?', solving_duration: 5}
+        ] AS q
+        MATCH (student:Person {name: '배수지'})
+        MATCH (question:Question)
+        WHERE question.code = q.code
+        FOREACH (_ IN CASE WHEN q.solving_time IS NOT NULL THEN [1] ELSE [] END |
+        CREATE (student)-[:SOLVED {
+            question_code: q.code,
+            is_correct: q.is_correct,
+            solving_time: q.solving_time,
+            completion_time: q.completion_time,
+            time_taken: q.time_taken,
+            score: q.score,
+            feedback: q.feedback,
+            solving_duration: q.solving_duration
+        }]->(question)
+        )
+        FOREACH (_ IN CASE WHEN q.solving_time IS NULL THEN [1] ELSE [] END |
+        CREATE (student)-[:UNSOLVED {
+            question_code: q.code,
+            solving_time: null,
+            completion_time: null,
+            time_taken: null,
+            score: null,
+            feedback: null,
+            solving_duration: null,
+            is_correct: null
+        }]->(question)
+        );
+
+        UNWIND [
+        {code: '4A01Q01', solving_time: '2024-11-20T02:20:00Z', completion_time: '2024-11-20T02:25:00Z', time_taken: 5, score: 9, feedback: '정말 잘했어.', solving_duration: 5},
+        {code: '4A01Q02', solving_time: '2024-11-20T02:30:00Z', completion_time: '2024-11-20T02:35:00Z', time_taken: 5, score: 7, feedback: '다시 해볼까?', solving_duration: 5},
+        {code: '4A01Q03', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '4A01Q04', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '4A01Q05', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+
+        {code: '4A02Q01', solving_time: '2024-11-20T03:10:00Z', completion_time: '2024-11-20T03:15:00Z', time_taken: 5, score: 9, feedback: '대단해!', solving_duration: 5},
+        {code: '4A02Q02', solving_time: '2024-11-20T03:20:00Z', completion_time: '2024-11-20T03:25:00Z', time_taken: 5, score: 7, feedback: '많이 노력했구나!', solving_duration: 5},
+        {code: '4A02Q03', solving_time: '2024-11-20T03:30:00Z', completion_time: '2024-11-20T03:35:00Z', time_taken: 5, score: 10, feedback: '정말 좋아.', solving_duration: 5},
+        {code: '4A02Q04', solving_time: '2024-11-20T03:40:00Z', completion_time: '2024-11-20T03:45:00Z', time_taken: 5, score: 8, feedback: '정말 잘했어.', solving_duration: 5},
+        {code: '4A02Q05', solving_time: '2024-11-20T03:50:00Z', completion_time: '2024-11-20T03:55:00Z', time_taken: 5, score: 6, feedback: '괜찮은데?', solving_duration: 5},
+
+        {code: '4A03Q01', solving_time: '2024-11-20T04:00:00Z', completion_time: '2024-11-20T04:05:00Z', time_taken: 5, score: 9, feedback: '참 잘했어요.', solving_duration: 5},
+        {code: '4A03Q02', solving_time: '2024-11-20T04:10:00Z', completion_time: '2024-11-20T04:15:00Z', time_taken: 5, score: 7, feedback: '괜찮은 시도군요.', solving_duration: 5},
+        {code: '4A03Q03', solving_time: '2024-11-20T04:20:00Z', completion_time: '2024-11-20T04:25:00Z', time_taken: 5, score: 6, feedback: '지금처럼 계속 해볼까?', solving_duration: 5},
+        {code: '4A03Q04', solving_time: '2024-11-20T04:30:00Z', completion_time: '2024-11-20T04:35:00Z', time_taken: 5, score: 10, feedback: '엄청나!', solving_duration: 5},
+        {code: '4A03Q05', solving_time: '2024-11-20T04:40:00Z', completion_time: '2024-11-20T04:45:00Z', time_taken: 5, score: 8, feedback: '좋은 점수인걸?', solving_duration: 5},
+
+        {code: '4A04Q01', solving_time: '2024-11-20T04:50:00Z', completion_time: '2024-11-20T04:55:00Z', time_taken: 5, score: 9, feedback: '정말 잘했어.', solving_duration: 5},
+        {code: '4A04Q02', solving_time: '2024-11-20T05:00:00Z', completion_time: '2024-11-20T05:05:00Z', time_taken: 5, score: 7, feedback: '계속 해보자.', solving_duration: 5},
+        {code: '4A04Q03', solving_time: '2024-11-20T05:10:00Z', completion_time: '2024-11-20T05:15:00Z', time_taken: 5, score: 10, feedback: '완벽해요.', solving_duration: 5},
+        {code: '4A04Q04', solving_time: '2024-11-20T05:20:00Z', completion_time: '2024-11-20T05:25:00Z', time_taken: 5, score: 6, feedback: '거의 다 왔어!', solving_duration: 5},
+        {code: '4A04Q05', solving_time: '2024-11-20T05:30:00Z', completion_time: '2024-11-20T05:35:00Z', time_taken: 5, score: 8, feedback: '잘했어!', solving_duration: 5},
+
+        {code: '4A05Q01', solving_time: '2024-11-20T05:40:00Z', completion_time: '2024-11-20T05:45:00Z', time_taken: 5, score: 9, feedback: '참 잘했어요.', solving_duration: 5},
+        {code: '4A05Q02', solving_time: '2024-11-20T05:50:00Z', completion_time: '2024-11-20T05:55:00Z', time_taken: 5, score: 7, feedback: '많이 노력했구나!', solving_duration: 5},
+        {code: '4A05Q03', solving_time: '2024-11-20T06:00:00Z', completion_time: '2024-11-20T06:05:00Z', time_taken: 5, score: 10, feedback: '정말 좋아.', solving_duration: 5},
+        {code: '4A05Q04', solving_time: '2024-11-20T06:10:00Z', completion_time: '2024-11-20T06:15:00Z', time_taken: 5, score: 8, feedback: '정말 잘했어.', solving_duration: 5},
+        {code: '4A05Q05', solving_time: '2024-11-20T06:20:00Z', completion_time: '2024-11-20T06:25:00Z', time_taken: 5, score: 6, feedback: '괜찮은데?', solving_duration: 5},
+
+        {code: '4A06Q01', solving_time: '2024-11-20T06:30:00Z', completion_time: '2024-11-20T06:35:00Z', time_taken: 5, score: 9, feedback: '대단해!', solving_duration: 5},
+        {code: '4A06Q02', solving_time: '2024-11-20T06:40:00Z', completion_time: '2024-11-20T06:45:00Z', time_taken: 5, score: 7, feedback: '지금처럼 계속 해볼까?', solving_duration: 5},
+        {code: '4A06Q03', solving_time: '2024-11-20T06:50:00Z', completion_time: '2024-11-20T06:55:00Z', time_taken: 5, score: 6, feedback: '다시 해볼까?', solving_duration: 5},
+        {code: '4A06Q04', solving_time: '2024-11-20T07:00:00Z', completion_time: '2024-11-20T07:05:00Z', time_taken: 5, score: 10, feedback: '완벽해요.', solving_duration: 5},
+        {code: '4A06Q05', solving_time: '2024-11-20T07:10:00Z', completion_time: '2024-11-20T07:15:00Z', time_taken: 5, score: 8, feedback: '잘하는데?', solving_duration: 5},
+
+        {code: '4A07Q01', solving_time: '2024-11-20T07:20:00Z', completion_time: '2024-11-20T07:25:00Z', time_taken: 5, score: 9, feedback: '정말 잘했어.', solving_duration: 5},
+        {code: '4A07Q02', solving_time: '2024-11-20T07:30:00Z', completion_time: '2024-11-20T07:35:00Z', time_taken: 5, score: 7, feedback: '괜찮은 시도군요.', solving_duration: 5},
+        {code: '4A07Q03', solving_time: '2024-11-20T07:40:00Z', completion_time: '2024-11-20T07:45:00Z', time_taken: 5, score: 6, feedback: '지금처럼 계속 해볼까?', solving_duration: 5},
+        {code: '4A07Q04', solving_time: '2024-11-20T07:50:00Z', completion_time: '2024-11-20T07:55:00Z', time_taken: 5, score: 10, feedback: '엄청나!', solving_duration: 5},
+        {code: '4A07Q05', solving_time: '2024-11-20T08:00:00Z', completion_time: '2024-11-20T08:05:00Z', time_taken: 5, score: 8, feedback: '참 잘했어요.', solving_duration: 5},
+
+        {code: '4A08Q01', solving_time: '2024-11-20T08:10:00Z', completion_time: '2024-11-20T08:15:00Z', time_taken: 5, score: 9, feedback: '잘하는데?', solving_duration: 5},
+        {code: '4A08Q02', solving_time: '2024-11-20T08:20:00Z', completion_time: '2024-11-20T08:25:00Z', time_taken: 5, score: 7, feedback: '많이 노력했구나!', solving_duration: 5},
+        {code: '4A08Q03', solving_time: '2024-11-20T08:30:00Z', completion_time: '2024-11-20T08:35:00Z', time_taken: 5, score: 10, feedback: '엄청나!', solving_duration: 5},
+        {code: '4A08Q04', solving_time: '2024-11-20T08:40:00Z', completion_time: '2024-11-20T08:45:00Z', time_taken: 5, score: 8, feedback: '좋아!', solving_duration: 5},
+        {code: '4A08Q05', solving_time: '2024-11-20T08:50:00Z', completion_time: '2024-11-20T08:55:00Z', time_taken: 5, score: 6, feedback: '다시 해볼까?', solving_duration: 5},
+
+        {code: '4A09Q01', solving_time: '2024-11-20T09:00:00Z', completion_time: '2024-11-20T09:05:00Z', time_taken: 5, score: 9, feedback: '참 잘했어요.', solving_duration: 5},
+        {code: '4A09Q02', solving_time: '2024-11-20T09:10:00Z', completion_time: '2024-11-20T09:15:00Z', time_taken: 5, score: 7, feedback: '잘했구나', solving_duration: 5},
+        {code: '4A09Q03', solving_time: '2024-11-20T09:20:00Z', completion_time: '2024-11-20T09:25:00Z', time_taken: 5, score: 6, feedback: '계속해봐!', solving_duration: 5},
+        {code: '4A09Q04', solving_time: '2024-11-20T09:30:00Z', completion_time: '2024-11-20T09:35:00Z', time_taken: 5, score: 10, feedback: '대단해!', solving_duration: 5},
+        {code: '4A09Q05', solving_time: '2024-11-20T09:40:00Z', completion_time: '2024-11-20T09:45:00Z', time_taken: 5, score: 8, feedback: '잘했어!', solving_duration: 5},
+
+        {code: '4A10Q01', solving_time: '2024-11-20T09:50:00Z', completion_time: '2024-11-20T09:55:00Z', time_taken: 5, score: 9, feedback: '정말 좋아.', solving_duration: 5},
+        {code: '4A10Q02', solving_time: '2024-11-20T10:00:00Z', completion_time: '2024-11-20T10:05:00Z', time_taken: 5, score: 8, feedback: '잘했구나', solving_duration: 5},
+        {code: '4A10Q03', solving_time: '2024-11-20T10:10:00Z', completion_time: '2024-11-20T10:15:00Z', time_taken: 5, score: 7, feedback: '거의 다 왔어!', solving_duration: 5},
+        {code: '4A10Q04', solving_time: '2024-11-20T10:20:00Z', completion_time: '2024-11-20T10:25:00Z', time_taken: 5, score: 6, feedback: '다시 해볼까?', solving_duration: 5},
+        {code: '4A10Q05', solving_time: '2024-11-20T10:30:00Z', completion_time: '2024-11-20T10:35:00Z', time_taken: 5, score: 10, feedback: '완벽해!', solving_duration: 5},
+
+        {code: '4A11Q01', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '4A11Q02', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '4A11Q03', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '4A11Q04', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '4A11Q05', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null}
+        ] AS q
+        MATCH (student:Person {name: '남주혁'})
+        MATCH (question:Question)
+        WHERE question.code = q.code
+        FOREACH (_ IN CASE WHEN q.solving_time IS NOT NULL THEN [1] ELSE [] END |
+        CREATE (student)-[:SOLVED {
+            question_code: q.code,
+            is_correct: q.is_correct,
+            solving_time: q.solving_time,
+            completion_time: q.completion_time,
+            time_taken: q.time_taken,
+            score: q.score,
+            feedback: q.feedback,
+            solving_duration: q.solving_duration
+        }]->(question)
+        )
+        FOREACH (_ IN CASE WHEN q.solving_time IS NULL THEN [1] ELSE [] END |
+        CREATE (student)-[:UNSOLVED {
+            question_code: q.code,
+            solving_time: null,
+            completion_time: null,
+            time_taken: null,
+            score: null,
+            feedback: null,
+            solving_duration: null,
+            is_correct: null
+        }]->(question)
+        );
+
+        UNWIND [
+        {code: '4A01Q01', solving_time: '2024-11-20T10:00:00Z', completion_time: '2024-11-20T10:05:00Z', time_taken: 5, score: 10, feedback: '대단해!', solving_duration: 300},
+        {code: '4A01Q02', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '4A01Q03', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '4A01Q04', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '4A01Q05', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+
+        {code: '4A02Q01', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '4A02Q02', solving_time: '2024-11-20T10:28:00Z', completion_time: '2024-11-20T10:33:00Z', time_taken: 5, score: 8, feedback: '잘하는데?', solving_duration: 300},
+        {code: '4A02Q03', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '4A02Q04', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '4A02Q05', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+
+        {code: '4A03Q01', solving_time: '2024-11-20T10:49:00Z', completion_time: '2024-11-20T10:54:00Z', time_taken: 5, score: 10, feedback: '대단해요.', solving_duration: 300},
+        {code: '4A03Q02', solving_time: '2024-11-20T10:55:00Z', completion_time: '2024-11-20T10:59:00Z', time_taken: 4, score: 7, feedback: '괜찮은데?', solving_duration: 240},
+        {code: '4A03Q03', solving_time: '2024-11-20T11:00:00Z', completion_time: '2024-11-20T11:04:00Z', time_taken: 4, score: 9, feedback: '참 잘했어요.', solving_duration: 240},
+        {code: '4A03Q04', solving_time: '2024-11-20T11:05:00Z', completion_time: '2024-11-20T11:09:00Z', time_taken: 4, score: 8, feedback: '정말 좋아.', solving_duration: 240},
+        {code: '4A03Q05', solving_time: '2024-11-20T11:10:00Z', completion_time: '2024-11-20T11:13:00Z', time_taken: 3, score: 6, feedback: '다음에는 더 잘할 수 있을 거야.', solving_duration: 180},
+
+        {code: '4A04Q01', solving_time: '2024-11-20T11:14:00Z', completion_time: '2024-11-20T11:19:00Z', time_taken: 5, score: 8, feedback: '많이 노력했구나!', solving_duration: 300},
+        {code: '4A04Q02', solving_time: '2024-11-20T11:20:00Z', completion_time: '2024-11-20T11:24:00Z', time_taken: 4, score: 7, feedback: '잘했어!', solving_duration: 240},
+        {code: '4A04Q03', solving_time: '2024-11-20T11:25:00Z', completion_time: '2024-11-20T11:30:00Z', time_taken: 5, score: 9, feedback: '계속 해보는 거야!', solving_duration: 300},
+        {code: '4A04Q04', solving_time: '2024-11-20T11:31:00Z', completion_time: '2024-11-20T11:35:00Z', time_taken: 4, score: 6, feedback: '나쁘지 않아.', solving_duration: 240},
+        {code: '4A04Q05', solving_time: '2024-11-20T11:36:00Z', completion_time: '2024-11-20T11:40:00Z', time_taken: 4, score: 10, feedback: '완벽해!', solving_duration: 240},
+
+        {code: '4A05Q01', solving_time: '2024-11-20T11:41:00Z', completion_time: '2024-11-20T11:46:00Z', time_taken: 5, score: 10, feedback: '엄청나다.', solving_duration: 300},
+        {code: '4A05Q02', solving_time: '2024-11-20T11:47:00Z', completion_time: '2024-11-20T11:51:00Z', time_taken: 4, score: 8, feedback: '정말 잘했어.', solving_duration: 240},
+        {code: '4A05Q03', solving_time: '2024-11-20T11:52:00Z', completion_time: '2024-11-20T11:56:00Z', time_taken: 4, score: 6, feedback: '다음에는 더 잘할 수 있을 거야.', solving_duration: 240},
+        {code: '4A05Q04', solving_time: '2024-11-20T11:57:00Z', completion_time: '2024-11-20T12:01:00Z', time_taken: 4, score: 9, feedback: '참 잘했어요.', solving_duration: 240},
+        {code: '4A05Q05', solving_time: '2024-11-20T12:02:00Z', completion_time: '2024-11-20T12:05:00Z', time_taken: 3, score: 7, feedback: '좋은 점수인걸?', solving_duration: 180},
+
+        {code: '4A06Q01', solving_time: '2024-11-20T12:06:00Z', completion_time: '2024-11-20T12:10:00Z', time_taken: 4, score: 10, feedback: '정말 좋아.', solving_duration: 240},
+        {code: '4A06Q02', solving_time: '2024-11-20T12:11:00Z', completion_time: '2024-11-20T12:15:00Z', time_taken: 4, score: 8, feedback: '잘하는데?', solving_duration: 240},
+        {code: '4A06Q03', solving_time: '2024-11-20T12:16:00Z', completion_time: '2024-11-20T12:20:00Z', time_taken: 4, score: 6, feedback: '노력해 봅시다.', solving_duration: 240},
+        {code: '4A06Q04', solving_time: '2024-11-20T12:21:00Z', completion_time: '2024-11-20T12:25:00Z', time_taken: 4, score: 9, feedback: '잘하고 있어.', solving_duration: 240},
+        {code: '4A06Q05', solving_time: '2024-11-20T12:26:00Z', completion_time: '2024-11-20T12:29:00Z', time_taken: 3, score: 8, feedback: '계속 해보는 거야!', solving_duration: 180},
+
+        {code: '4A07Q01', solving_time: '2024-11-20T12:30:00Z', completion_time: '2024-11-20T12:34:00Z', time_taken: 4, score: 9, feedback: '최고야!', solving_duration: 240},
+        {code: '4A07Q02', solving_time: '2024-11-20T12:35:00Z', completion_time: '2024-11-20T12:38:00Z', time_taken: 3, score: 7, feedback: '나쁘지 않아.', solving_duration: 180},
+        {code: '4A07Q03', solving_time: '2024-11-20T12:39:00Z', completion_time: '2024-11-20T12:43:00Z', time_taken: 4, score: 10, feedback: '완벽해!', solving_duration: 240},
+        {code: '4A07Q04', solving_time: '2024-11-20T12:44:00Z', completion_time: '2024-11-20T12:48:00Z', time_taken: 4, score: 8, feedback: '잘했어!', solving_duration: 240},
+        {code: '4A07Q05', solving_time: '2024-11-20T12:49:00Z', completion_time: '2024-11-20T12:53:00Z', time_taken: 4, score: 6, feedback: '꾸준히 해보자.', solving_duration: 240},
+
+        {code: '4A08Q01', solving_time: '2024-11-20T12:54:00Z', completion_time: '2024-11-20T12:59:00Z', time_taken: 5, score: 10, feedback: '대단해!', solving_duration: 300},
+        {code: '4A08Q02', solving_time: '2024-11-20T13:00:00Z', completion_time: '2024-11-20T13:04:00Z', time_taken: 4, score: 9, feedback: '참 잘했어요.', solving_duration: 240},
+        {code: '4A08Q03', solving_time: '2024-11-20T13:05:00Z', completion_time: '2024-11-20T13:08:00Z', time_taken: 3, score: 6, feedback: '다음엔 더 잘 해보자.', solving_duration: 180},
+        {code: '4A08Q04', solving_time: '2024-11-20T13:09:00Z', completion_time: '2024-11-20T13:13:00Z', time_taken: 4, score: 8, feedback: '많이 노력했구나!', solving_duration: 240},
+        {code: '4A08Q05', solving_time: '2024-11-20T13:14:00Z', completion_time: '2024-11-20T13:18:00Z', time_taken: 4, score: 7, feedback: '괜찮은데?', solving_duration: 240},
+
+        {code: '4A09Q01', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '4A09Q02', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '4A09Q03', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '4A09Q04', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '4A09Q05', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+
+        {code: '4A10Q01', solving_time: '2024-11-20T13:44:00Z', completion_time: '2024-11-20T13:48:00Z', time_taken: 4, score: 8, feedback: '계속 해보는 거야!', solving_duration: 240},
+        {code: '4A10Q02', solving_time: '2024-11-20T13:49:00Z', completion_time: '2024-11-20T13:53:00Z', time_taken: 4, score: 9, feedback: '잘했어!', solving_duration: 240},
+        {code: '4A10Q03', solving_time: '2024-11-20T13:54:00Z', completion_time: '2024-11-20T13:58:00Z', time_taken: 4, score: 7, feedback: '더 연습해 보자.', solving_duration: 240},
+        {code: '4A10Q04', solving_time: '2024-11-20T13:59:00Z', completion_time: '2024-11-20T14:03:00Z', time_taken: 4, score: 10, feedback: '뛰어난걸?', solving_duration: 240},
+        {code: '4A10Q05', solving_time: '2024-11-20T14:04:00Z', completion_time: '2024-11-20T14:08:00Z', time_taken: 4, score: 8, feedback: '정말 잘했어.', solving_duration: 240},
+
+        {code: '4A11Q01', solving_time: '2024-11-20T14:09:00Z', completion_time: '2024-11-20T14:14:00Z', time_taken: 5, score: 10, feedback: '멋지다.', solving_duration: 300},
+        {code: '4A11Q02', solving_time: '2024-11-20T14:15:00Z', completion_time: '2024-11-20T14:18:00Z', time_taken: 3, score: 7, feedback: '꾸준히 노력해 보자.', solving_duration: 180},
+        {code: '4A11Q03', solving_time: '2024-11-20T14:19:00Z', completion_time: '2024-11-20T14:23:00Z', time_taken: 4, score: 9, feedback: '좋은 점수인걸?', solving_duration: 240},
+        {code: '4A11Q04', solving_time: '2024-11-20T14:24:00Z', completion_time: '2024-11-20T14:28:00Z', time_taken: 4, score: 6, feedback: '조금 더 해볼까요?', solving_duration: 240},
+        {code: '4A11Q05', solving_time: '2024-11-20T14:29:00Z', completion_time: '2024-11-20T14:33:00Z', time_taken: 4, score: 8, feedback: '참 잘했어요.', solving_duration: 240}
+        ] AS q
+        MATCH (student:Person {name: '정해인'})
+        MATCH (question:Question)
+        WHERE question.code = q.code
+        FOREACH (_ IN CASE WHEN q.solving_time IS NOT NULL THEN [1] ELSE [] END |
+        CREATE (student)-[:SOLVED {
+            question_code: q.code,
+            is_correct: q.is_correct,
+            solving_time: q.solving_time,
+            completion_time: q.completion_time,
+            time_taken: q.time_taken,
+            score: q.score,
+            feedback: q.feedback,
+            solving_duration: q.solving_duration
+        }]->(question)
+        )
+        FOREACH (_ IN CASE WHEN q.solving_time IS NULL THEN [1] ELSE [] END |
+        CREATE (student)-[:UNSOLVED {
+            question_code: q.code,
+            solving_time: null,
+            completion_time: null,
+            time_taken: null,
+            score: null,
+            feedback: null,
+            solving_duration: null,
+            is_correct: null
+        }]->(question)
+        );
+    // 5학년
+        UNWIND [
+        {code: '5A01Q01', solving_time: '2024-11-20T10:00:00Z', completion_time: '2024-11-20T10:05:00Z', time_taken: 5, score: 8, feedback: '잘했어!', solving_duration: 300},
+        {code: '5A01Q02', solving_time: '2024-11-20T10:06:00Z', completion_time: '2024-11-20T10:09:00Z', time_taken: 3, score: 7, feedback: '계속 시도해 봅시다.', solving_duration: 180},
+        {code: '5A01Q03', solving_time: '2024-11-20T10:10:00Z', completion_time: '2024-11-20T10:14:00Z', time_taken: 4, score: 9, feedback: '참 잘했어요.', solving_duration: 240},
+        {code: '5A01Q04', solving_time: '2024-11-20T10:15:00Z', completion_time: '2024-11-20T10:19:00Z', time_taken: 4, score: 6, feedback: '다음에는 더 잘할 수 있을 거야.', solving_duration: 240},
+        {code: '5A01Q05', solving_time: '2024-11-20T10:20:00Z', completion_time: '2024-11-20T10:25:00Z', time_taken: 5, score: 10, feedback: '대단해!', solving_duration: 300},
+
+        {code: '5A02Q01', solving_time: '2024-11-20T10:26:00Z', completion_time: '2024-11-20T10:30:00Z', time_taken: 4, score: 8, feedback: '완벽해요.', solving_duration: 240},
+        {code: '5A02Q02', solving_time: '2024-11-20T10:31:00Z', completion_time: '2024-11-20T10:34:00Z', time_taken: 3, score: 7, feedback: '거의 다 왔어요!', solving_duration: 180},
+        {code: '5A02Q03', solving_time: '2024-11-20T10:35:00Z', completion_time: '2024-11-20T10:38:00Z', time_taken: 3, score: 9, feedback: '최고야!', solving_duration: 180},
+        {code: '5A02Q04', solving_time: '2024-11-20T10:39:00Z', completion_time: '2024-11-20T10:43:00Z', time_taken: 4, score: 6, feedback: '노력해 봅시다.', solving_duration: 240},
+        {code: '5A02Q05', solving_time: '2024-11-20T10:44:00Z', completion_time: '2024-11-20T10:48:00Z', time_taken: 4, score: 10, feedback: '뛰어난걸?', solving_duration: 240},
+
+        {code: '5A03Q01', solving_time: '2024-11-20T11:00:00Z', completion_time: '2024-11-20T11:03:00Z', time_taken: 3, score: 9, feedback: '완벽해요.', solving_duration: 180},
+        {code: '5A03Q02', solving_time: '2024-11-20T11:04:00Z', completion_time: '2024-11-20T11:08:00Z', time_taken: 4, score: 7, feedback: '거의 다 왔어요!', solving_duration: 240},
+        {code: '5A03Q03', solving_time: '2024-11-20T11:09:00Z', completion_time: '2024-11-20T11:13:00Z', time_taken: 4, score: 10, feedback: '최고야!', solving_duration: 240},
+        {code: '5A03Q04', solving_time: '2024-11-20T11:14:00Z', completion_time: '2024-11-20T11:19:00Z', time_taken: 5, score: 6, feedback: '다음에는 더 잘할 수 있을 거야.', solving_duration: 300},
+        {code: '5A03Q05', solving_time: '2024-11-20T11:20:00Z', completion_time: '2024-11-20T11:24:00Z', time_taken: 4, score: 10, feedback: '뛰어난걸?', solving_duration: 240},
+
+        {code: '5A04Q01', solving_time: '2024-11-20T11:25:00Z', completion_time: '2024-11-20T11:29:00Z', time_taken: 4, score: 8, feedback: '잘했어!', solving_duration: 240},
+        {code: '5A04Q02', solving_time: '2024-11-20T11:30:00Z', completion_time: '2024-11-20T11:35:00Z', time_taken: 5, score: 7, feedback: '계속 시도해 봅시다.', solving_duration: 300},
+        {code: '5A04Q03', solving_time: '2024-11-20T11:36:00Z', completion_time: '2024-11-20T11:39:00Z', time_taken: 3, score: 10, feedback: '대단해!', solving_duration: 180},
+        {code: '5A04Q04', solving_time: '2024-11-20T11:40:00Z', completion_time: '2024-11-20T11:44:00Z', time_taken: 4, score: 9, feedback: '참 잘했어요.', solving_duration: 240},
+        {code: '5A04Q05', solving_time: '2024-11-20T11:45:00Z', completion_time: '2024-11-20T11:49:00Z', time_taken: 4, score: 6, feedback: '노력해 봅시다.', solving_duration: 240},
+
+        {code: '5A05Q01', solving_time: '2024-11-20T11:50:00Z', completion_time: '2024-11-20T11:55:00Z', time_taken: 5, score: 9, feedback: '좋아!', solving_duration: 300},
+        {code: '5A05Q02', solving_time: '2024-11-20T11:56:00Z', completion_time: '2024-11-20T12:00:00Z', time_taken: 4, score: 8, feedback: '참 잘했어요.', solving_duration: 240},
+        {code: '5A05Q03', solving_time: '2024-11-20T12:01:00Z', completion_time: '2024-11-20T12:05:00Z', time_taken: 4, score: 7, feedback: '계속 시도해 봅시다.', solving_duration: 240},
+        {code: '5A05Q04', solving_time: '2024-11-20T12:06:00Z', completion_time: '2024-11-20T12:10:00Z', time_taken: 4, score: 10, feedback: '뛰어난걸?', solving_duration: 240},
+        {code: '5A05Q05', solving_time: '2024-11-20T12:11:00Z', completion_time: '2024-11-20T12:15:00Z', time_taken: 4, score: 6, feedback: '거의 다 왔어요!', solving_duration: 240},
+
+        {code: '5A06Q01', solving_time: '2024-11-20T11:00:00Z', completion_time: '2024-11-20T11:03:00Z', time_taken: 3, score: 9, feedback: '완벽해요.', solving_duration: 180},
+        {code: '5A06Q02', solving_time: '2024-11-20T11:04:00Z', completion_time: '2024-11-20T11:08:00Z', time_taken: 4, score: 7, feedback: '거의 다 왔어요!', solving_duration: 240},
+        {code: '5A06Q03', solving_time: '2024-11-20T11:09:00Z', completion_time: '2024-11-20T11:13:00Z', time_taken: 4, score: 10, feedback: '최고야!', solving_duration: 240},
+        {code: '5A06Q04', solving_time: '2024-11-20T11:14:00Z', completion_time: '2024-11-20T11:19:00Z', time_taken: 5, score: 6, feedback: '다음에는 더 잘할 수 있을 거야.', solving_duration: 300},
+        {code: '5A06Q05', solving_time: '2024-11-20T11:20:00Z', completion_time: '2024-11-20T11:24:00Z', time_taken: 4, score: 10, feedback: '뛰어난걸?', solving_duration: 240},
+
+        {code: '5A07Q01', solving_time: '2024-11-20T11:25:00Z', completion_time: '2024-11-20T11:29:00Z', time_taken: 4, score: 8, feedback: '잘했어!', solving_duration: 240},
+        {code: '5A07Q02', solving_time: '2024-11-20T11:30:00Z', completion_time: '2024-11-20T11:35:00Z', time_taken: 5, score: 7, feedback: '계속 시도해 봅시다.', solving_duration: 300},
+        {code: '5A07Q03', solving_time: '2024-11-20T11:36:00Z', completion_time: '2024-11-20T11:39:00Z', time_taken: 3, score: 10, feedback: '대단해!', solving_duration: 180},
+        {code: '5A07Q04', solving_time: '2024-11-20T11:40:00Z', completion_time: '2024-11-20T11:44:00Z', time_taken: 4, score: 9, feedback: '참 잘했어요.', solving_duration: 240},
+        {code: '5A07Q05', solving_time: '2024-11-20T11:45:00Z', completion_time: '2024-11-20T11:49:00Z', time_taken: 4, score: 6, feedback: '노력해 봅시다.', solving_duration: 240},
+
+        {code: '5A08Q01', solving_time: '2024-11-20T11:50:00Z', completion_time: '2024-11-20T11:55:00Z', time_taken: 5, score: 9, feedback: '좋아!', solving_duration: 300},
+        {code: '5A08Q02', solving_time: '2024-11-20T11:56:00Z', completion_time: '2024-11-20T12:00:00Z', time_taken: 4, score: 8, feedback: '참 잘했어요.', solving_duration: 240},
+        {code: '5A08Q03', solving_time: '2024-11-20T12:01:00Z', completion_time: '2024-11-20T12:05:00Z', time_taken: 4, score: 7, feedback: '계속 시도해 봅시다.', solving_duration: 240},
+        {code: '5A08Q04', solving_time: '2024-11-20T12:06:00Z', completion_time: '2024-11-20T12:10:00Z', time_taken: 4, score: 10, feedback: '뛰어난걸?', solving_duration: 240},
+        {code: '5A08Q05', solving_time: '2024-11-20T12:11:00Z', completion_time: '2024-11-20T12:15:00Z', time_taken: 4, score: 6, feedback: '거의 다 왔어요!', solving_duration: 240},
+
+        {code: '5A09Q01', solving_time: '2024-11-20T11:00:00Z', completion_time: '2024-11-20T11:03:00Z', time_taken: 3, score: 9, feedback: '완벽해요.', solving_duration: 180},
+        {code: '5A09Q02', solving_time: '2024-11-20T11:04:00Z', completion_time: '2024-11-20T11:08:00Z', time_taken: 4, score: 7, feedback: '거의 다 왔어요!', solving_duration: 240},
+        {code: '5A09Q03', solving_time: '2024-11-20T11:09:00Z', completion_time: '2024-11-20T11:13:00Z', time_taken: 4, score: 10, feedback: '최고야!', solving_duration: 240},
+        {code: '5A09Q04', solving_time: '2024-11-20T11:14:00Z', completion_time: '2024-11-20T11:19:00Z', time_taken: 5, score: 6, feedback: '다음에는 더 잘할 수 있을 거야.', solving_duration: 300},
+        {code: '5A09Q05', solving_time: '2024-11-20T11:20:00Z', completion_time: '2024-11-20T11:24:00Z', time_taken: 4, score: 10, feedback: '뛰어난걸?', solving_duration: 240},
+
+        {code: '5A10Q01', solving_time: '2024-11-20T11:25:00Z', completion_time: '2024-11-20T11:29:00Z', time_taken: 4, score: 8, feedback: '잘했어!', solving_duration: 240},
+        {code: '5A10Q02', solving_time: '2024-11-20T11:30:00Z', completion_time: '2024-11-20T11:35:00Z', time_taken: 5, score: 7, feedback: '계속 시도해 봅시다.', solving_duration: 300},
+        {code: '5A10Q03', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '5A10Q04', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '5A10Q05', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+
+        {code: '5A11Q01', solving_time: '2024-11-20T11:50:00Z', completion_time: '2024-11-20T11:55:00Z', time_taken: 5, score: 9, feedback: '좋아!', solving_duration: 300},
+        {code: '5A11Q02', solving_time: '2024-11-20T11:56:00Z', completion_time: '2024-11-20T12:00:00Z', time_taken: 4, score: 8, feedback: '참 잘했어요.', solving_duration: 240},
+        {code: '5A11Q03', solving_time: '2024-11-20T12:01:00Z', completion_time: '2024-11-20T12:05:00Z', time_taken: 4, score: 7, feedback: '계속 시도해 봅시다.', solving_duration: 240},
+        {code: '5A11Q04', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '5A11Q05', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+
+        {code: '5A12Q01', solving_time: '2024-11-20T11:50:00Z', completion_time: '2024-11-20T11:55:00Z', time_taken: 5, score: 9, feedback: '좋아!', solving_duration: 300},
+        {code: '5A12Q02', solving_time: '2024-11-20T11:56:00Z', completion_time: '2024-11-20T12:00:00Z', time_taken: 4, score: 8, feedback: '참 잘했어요.', solving_duration: 240},
+        {code: '5A12Q03', solving_time: '2024-11-20T12:01:00Z', completion_time: '2024-11-20T12:05:00Z', time_taken: 4, score: 7, feedback: '계속 시도해 봅시다.', solving_duration: 240},
+        {code: '5A12Q04', solving_time: '2024-11-20T12:06:00Z', completion_time: '2024-11-20T12:10:00Z', time_taken: 4, score: 10, feedback: '뛰어난걸?', solving_duration: 240},
+        {code: '5A12Q05', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null}
+        ] AS q
+        MATCH (student:Person {name: '박보영'})
+        MATCH (question:Question {code: q.code})
+        WHERE question.code = q.code
+        FOREACH (_ IN CASE WHEN q.solving_time IS NOT NULL THEN [1] ELSE [] END |
+        CREATE (student)-[:SOLVED {
+            question_code: q.code,
+            is_correct: q.is_correct,
+            solving_time: q.solving_time,
+            completion_time: q.completion_time,
+            time_taken: q.time_taken,
+            score: q.score,
+            feedback: q.feedback,
+            solving_duration: q.solving_duration
+        }]->(question)
+        )
+        FOREACH (_ IN CASE WHEN q.solving_time IS NULL THEN [1] ELSE [] END |
+        CREATE (student)-[:UNSOLVED {
+            question_code: q.code,
+            solving_time: null,
+            completion_time: null,
+            time_taken: null,
+            score: null,
+            feedback: null,
+            solving_duration: null,
+            is_correct: null
+        }]->(question)
+        );
+
+        UNWIND [
+        {code: '5A01Q01', solving_time: '2024-11-20T10:00:00Z', completion_time: '2024-11-20T10:05:00Z', time_taken: 5, score: 8, feedback: '잘했어!', solving_duration: 300},
+        {code: '5A01Q02', solving_time: '2024-11-20T10:06:00Z', completion_time: '2024-11-20T10:09:00Z', time_taken: 3, score: 7, feedback: '계속 시도해 봅시다.', solving_duration: 180},
+        {code: '5A01Q03', solving_time: '2024-11-20T10:10:00Z', completion_time: '2024-11-20T10:14:00Z', time_taken: 4, score: 9, feedback: '참 잘했어요.', solving_duration: 240},
+        {code: '5A01Q04', solving_time: '2024-11-20T10:15:00Z', completion_time: '2024-11-20T10:19:00Z', time_taken: 4, score: 6, feedback: '다음에는 더 잘할 수 있을 거야.', solving_duration: 240},
+        {code: '5A01Q05', solving_time: '2024-11-20T10:20:00Z', completion_time: '2024-11-20T10:25:00Z', time_taken: 5, score: 10, feedback: '대단해!', solving_duration: 300},
+
+        {code: '5A02Q01', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '5A02Q02', solving_time: '2024-11-20T10:31:00Z', completion_time: '2024-11-20T10:34:00Z', time_taken: 3, score: 7, feedback: '거의 다 왔어요!', solving_duration: 180},
+        {code: '5A02Q03', solving_time: '2024-11-20T10:35:00Z', completion_time: '2024-11-20T10:38:00Z', time_taken: 3, score: 9, feedback: '최고야!', solving_duration: 180},
+        {code: '5A02Q04', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '5A02Q05', solving_time: '2024-11-20T10:44:00Z', completion_time: '2024-11-20T10:48:00Z', time_taken: 4, score: 10, feedback: '뛰어난걸?', solving_duration: 240},
+
+        {code: '5A03Q01', solving_time: '2024-11-20T11:00:00Z', completion_time: '2024-11-20T11:03:00Z', time_taken: 3, score: 9, feedback: '완벽해요.', solving_duration: 180},
+        {code: '5A03Q02', solving_time: '2024-11-20T11:04:00Z', completion_time: '2024-11-20T11:08:00Z', time_taken: 4, score: 7, feedback: '거의 다 왔어요!', solving_duration: 240},
+        {code: '5A03Q03', solving_time: '2024-11-20T11:09:00Z', completion_time: '2024-11-20T11:13:00Z', time_taken: 4, score: 10, feedback: '최고야!', solving_duration: 240},
+        {code: '5A03Q04', solving_time: '2024-11-20T11:14:00Z', completion_time: '2024-11-20T11:19:00Z', time_taken: 5, score: 6, feedback: '다음에는 더 잘할 수 있을 거야.', solving_duration: 300},
+        {code: '5A03Q05', solving_time: '2024-11-20T11:20:00Z', completion_time: '2024-11-20T11:24:00Z', time_taken: 4, score: 10, feedback: '뛰어난걸?', solving_duration: 240},
+
+        {code: '5A04Q01', solving_time: '2024-11-20T11:25:00Z', completion_time: '2024-11-20T11:29:00Z', time_taken: 4, score: 8, feedback: '잘했어!', solving_duration: 240},
+        {code: '5A04Q02', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '5A04Q03', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '5A04Q04', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '5A04Q05', solving_time: '2024-11-20T11:45:00Z', completion_time: '2024-11-20T11:49:00Z', time_taken: 4, score: 6, feedback: '노력해 봅시다.', solving_duration: 240},
+
+        {code: '5A05Q01', solving_time: '2024-11-20T11:50:00Z', completion_time: '2024-11-20T11:55:00Z', time_taken: 5, score: 9, feedback: '좋아!', solving_duration: 300},
+        {code: '5A05Q02', solving_time: '2024-11-20T11:56:00Z', completion_time: '2024-11-20T12:00:00Z', time_taken: 4, score: 8, feedback: '참 잘했어요.', solving_duration: 240},
+        {code: '5A05Q03', solving_time: '2024-11-20T12:01:00Z', completion_time: '2024-11-20T12:05:00Z', time_taken: 4, score: 7, feedback: '계속 시도해 봅시다.', solving_duration: 240},
+        {code: '5A05Q04', solving_time: '2024-11-20T12:06:00Z', completion_time: '2024-11-20T12:10:00Z', time_taken: 4, score: 10, feedback: '뛰어난걸?', solving_duration: 240},
+        {code: '5A05Q05', solving_time: '2024-11-20T12:11:00Z', completion_time: '2024-11-20T12:15:00Z', time_taken: 4, score: 6, feedback: '거의 다 왔어요!', solving_duration: 240},
+
+        {code: '5A06Q01', solving_time: '2024-11-20T11:00:00Z', completion_time: '2024-11-20T11:03:00Z', time_taken: 3, score: 9, feedback: '완벽해요.', solving_duration: 180},
+        {code: '5A06Q02', solving_time: '2024-11-20T11:04:00Z', completion_time: '2024-11-20T11:08:00Z', time_taken: 4, score: 7, feedback: '거의 다 왔어요!', solving_duration: 240},
+        {code: '5A06Q03', solving_time: '2024-11-20T11:09:00Z', completion_time: '2024-11-20T11:13:00Z', time_taken: 4, score: 10, feedback: '최고야!', solving_duration: 240},
+        {code: '5A06Q04', solving_time: '2024-11-20T11:14:00Z', completion_time: '2024-11-20T11:19:00Z', time_taken: 5, score: 6, feedback: '다음에는 더 잘할 수 있을 거야.', solving_duration: 300},
+        {code: '5A06Q05', solving_time: '2024-11-20T11:20:00Z', completion_time: '2024-11-20T11:24:00Z', time_taken: 4, score: 10, feedback: '뛰어난걸?', solving_duration: 240},
+
+        {code: '5A07Q01', solving_time: '2024-11-20T11:25:00Z', completion_time: '2024-11-20T11:29:00Z', time_taken: 4, score: 8, feedback: '잘했어!', solving_duration: 240},
+        {code: '5A07Q02', solving_time: '2024-11-20T11:30:00Z', completion_time: '2024-11-20T11:35:00Z', time_taken: 5, score: 7, feedback: '계속 시도해 봅시다.', solving_duration: 300},
+        {code: '5A07Q03', solving_time: '2024-11-20T11:36:00Z', completion_time: '2024-11-20T11:39:00Z', time_taken: 3, score: 10, feedback: '대단해!', solving_duration: 180},
+        {code: '5A07Q04', solving_time: '2024-11-20T11:40:00Z', completion_time: '2024-11-20T11:44:00Z', time_taken: 4, score: 9, feedback: '참 잘했어요.', solving_duration: 240},
+        {code: '5A07Q05', solving_time: '2024-11-20T11:45:00Z', completion_time: '2024-11-20T11:49:00Z', time_taken: 4, score: 6, feedback: '노력해 봅시다.', solving_duration: 240},
+
+        {code: '5A08Q01', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '5A08Q02', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '5A08Q03', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '5A08Q04', solving_time: '2024-11-20T12:06:00Z', completion_time: '2024-11-20T12:10:00Z', time_taken: 4, score: 10, feedback: '뛰어난걸?', solving_duration: 240},
+        {code: '5A08Q05', solving_time: '2024-11-20T12:11:00Z', completion_time: '2024-11-20T12:15:00Z', time_taken: 4, score: 6, feedback: '거의 다 왔어요!', solving_duration: 240},
+
+        {code: '5A09Q01', solving_time: '2024-11-20T11:00:00Z', completion_time: '2024-11-20T11:03:00Z', time_taken: 3, score: 9, feedback: '완벽해요.', solving_duration: 180},
+        {code: '5A09Q02', solving_time: '2024-11-20T11:04:00Z', completion_time: '2024-11-20T11:08:00Z', time_taken: 4, score: 7, feedback: '거의 다 왔어요!', solving_duration: 240},
+        {code: '5A09Q03', solving_time: '2024-11-20T11:09:00Z', completion_time: '2024-11-20T11:13:00Z', time_taken: 4, score: 10, feedback: '최고야!', solving_duration: 240},
+        {code: '5A09Q04', solving_time: '2024-11-20T11:14:00Z', completion_time: '2024-11-20T11:19:00Z', time_taken: 5, score: 6, feedback: '다음에는 더 잘할 수 있을 거야.', solving_duration: 300},
+        {code: '5A09Q05', solving_time: '2024-11-20T11:20:00Z', completion_time: '2024-11-20T11:24:00Z', time_taken: 4, score: 10, feedback: '뛰어난걸?', solving_duration: 240},
+
+        {code: '5A10Q01', solving_time: '2024-11-20T11:25:00Z', completion_time: '2024-11-20T11:29:00Z', time_taken: 4, score: 8, feedback: '잘했어!', solving_duration: 240},
+        {code: '5A10Q02', solving_time: '2024-11-20T11:30:00Z', completion_time: '2024-11-20T11:35:00Z', time_taken: 5, score: 7, feedback: '계속 시도해 봅시다.', solving_duration: 300},
+        {code: '5A10Q03', solving_time: '2024-11-20T11:36:00Z', completion_time: '2024-11-20T11:39:00Z', time_taken: 3, score: 10, feedback: '대단해!', solving_duration: 180},
+        {code: '5A10Q04', solving_time: '2024-11-20T11:40:00Z', completion_time: '2024-11-20T11:44:00Z', time_taken: 4, score: 9, feedback: '참 잘했어요.', solving_duration: 240},
+        {code: '5A10Q05', solving_time: '2024-11-20T11:45:00Z', completion_time: '2024-11-20T11:49:00Z', time_taken: 4, score: 6, feedback: '노력해 봅시다.', solving_duration: 240},
+
+        {code: '5A11Q01', solving_time: '2024-11-20T11:50:00Z', completion_time: '2024-11-20T11:55:00Z', time_taken: 5, score: 9, feedback: '좋아!', solving_duration: 300},
+        {code: '5A11Q02', solving_time: '2024-11-20T11:56:00Z', completion_time: '2024-11-20T12:00:00Z', time_taken: 4, score: 8, feedback: '참 잘했어요.', solving_duration: 240},
+        {code: '5A11Q03', solving_time: '2024-11-20T12:01:00Z', completion_time: '2024-11-20T12:05:00Z', time_taken: 4, score: 7, feedback: '계속 시도해 봅시다.', solving_duration: 240},
+        {code: '5A11Q04', solving_time: '2024-11-20T12:06:00Z', completion_time: '2024-11-20T12:10:00Z', time_taken: 4, score: 10, feedback: '뛰어난걸?', solving_duration: 240},
+        {code: '5A11Q05', solving_time: '2024-11-20T12:11:00Z', completion_time: '2024-11-20T12:15:00Z', time_taken: 4, score: 6, feedback: '거의 다 왔어요!', solving_duration: 240},
+
+        {code: '5A12Q01', solving_time: '2024-11-20T11:50:00Z', completion_time: '2024-11-20T11:55:00Z', time_taken: 5, score: 9, feedback: '좋아!', solving_duration: 300},
+        {code: '5A12Q02', solving_time: '2024-11-20T11:56:00Z', completion_time: '2024-11-20T12:00:00Z', time_taken: 4, score: 8, feedback: '참 잘했어요.', solving_duration: 240},
+        {code: '5A12Q03', solving_time: '2024-11-20T12:01:00Z', completion_time: '2024-11-20T12:05:00Z', time_taken: 4, score: 7, feedback: '계속 시도해 봅시다.', solving_duration: 240},
+        {code: '5A12Q04', solving_time: '2024-11-20T12:06:00Z', completion_time: '2024-11-20T12:10:00Z', time_taken: 4, score: 10, feedback: '뛰어난걸?', solving_duration: 240},
+        {code: '5A12Q05', solving_time: '2024-11-20T12:11:00Z', completion_time: '2024-11-20T12:15:00Z', time_taken: 4, score: 6, feedback: '거의 다 왔어요!', solving_duration: 240}
+        ] AS q
+        MATCH (student:Person {name: '고아라'})
+        MATCH (question:Question {code: q.code})
+        WHERE question.code = q.code
+        FOREACH (_ IN CASE WHEN q.solving_time IS NOT NULL THEN [1] ELSE [] END |
+        CREATE (student)-[:SOLVED {
+            question_code: q.code,
+            is_correct: q.is_correct,
+            solving_time: q.solving_time,
+            completion_time: q.completion_time,
+            time_taken: q.time_taken,
+            score: q.score,
+            feedback: q.feedback,
+            solving_duration: q.solving_duration
+        }]->(question)
+        )
+        FOREACH (_ IN CASE WHEN q.solving_time IS NULL THEN [1] ELSE [] END |
+        CREATE (student)-[:UNSOLVED {
+            question_code: q.code,
+            solving_time: null,
+            completion_time: null,
+            time_taken: null,
+            score: null,
+            feedback: null,
+            solving_duration: null,
+            is_correct: null
+        }]->(question)
+        );
+
+        UNWIND [
+        {code: '5A01Q01', solving_time: '2024-11-20T10:00:00Z', completion_time: '2024-11-20T10:05:00Z', time_taken: 5, score: 8, feedback: '잘했어!', solving_duration: 300},
+        {code: '5A01Q02', solving_time: '2024-11-20T10:06:00Z', completion_time: '2024-11-20T10:09:00Z', time_taken: 3, score: 7, feedback: '계속 시도해 봅시다.', solving_duration: 180},
+        {code: '5A01Q03', solving_time: '2024-11-20T10:10:00Z', completion_time: '2024-11-20T10:14:00Z', time_taken: 4, score: 9, feedback: '참 잘했어요.', solving_duration: 240},
+        {code: '5A01Q04', solving_time: '2024-11-20T10:15:00Z', completion_time: '2024-11-20T10:19:00Z', time_taken: 4, score: 6, feedback: '다음에는 더 잘할 수 있을 거야.', solving_duration: 240},
+        {code: '5A01Q05', solving_time: '2024-11-20T10:20:00Z', completion_time: '2024-11-20T10:25:00Z', time_taken: 5, score: 10, feedback: '대단해!', solving_duration: 300},
+
+        {code: '5A02Q01', solving_time: '2024-11-20T10:26:00Z', completion_time: '2024-11-20T10:30:00Z', time_taken: 4, score: 8, feedback: '완벽해요.', solving_duration: 240},
+        {code: '5A02Q02', solving_time: '2024-11-20T10:31:00Z', completion_time: '2024-11-20T10:34:00Z', time_taken: 3, score: 7, feedback: '거의 다 왔어요!', solving_duration: 180},
+        {code: '5A02Q03', solving_time: '2024-11-20T10:35:00Z', completion_time: '2024-11-20T10:38:00Z', time_taken: 3, score: 9, feedback: '최고야!', solving_duration: 180},
+        {code: '5A02Q04', solving_time: '2024-11-20T10:39:00Z', completion_time: '2024-11-20T10:43:00Z', time_taken: 4, score: 6, feedback: '노력해 봅시다.', solving_duration: 240},
+        {code: '5A02Q05', solving_time: '2024-11-20T10:44:00Z', completion_time: '2024-11-20T10:48:00Z', time_taken: 4, score: 10, feedback: '뛰어난걸?', solving_duration: 240},
+
+        {code: '5A03Q01', solving_time: '2024-11-20T11:00:00Z', completion_time: '2024-11-20T11:03:00Z', time_taken: 3, score: 9, feedback: '완벽해요.', solving_duration: 180},
+        {code: '5A03Q02', solving_time: '2024-11-20T11:04:00Z', completion_time: '2024-11-20T11:08:00Z', time_taken: 4, score: 7, feedback: '거의 다 왔어요!', solving_duration: 240},
+        {code: '5A03Q03', solving_time: '2024-11-20T11:09:00Z', completion_time: '2024-11-20T11:13:00Z', time_taken: 4, score: 10, feedback: '최고야!', solving_duration: 240},
+        {code: '5A03Q04', solving_time: '2024-11-20T11:14:00Z', completion_time: '2024-11-20T11:19:00Z', time_taken: 5, score: 6, feedback: '다음에는 더 잘할 수 있을 거야.', solving_duration: 300},
+        {code: '5A03Q05', solving_time: '2024-11-20T11:20:00Z', completion_time: '2024-11-20T11:24:00Z', time_taken: 4, score: 10, feedback: '뛰어난걸?', solving_duration: 240},
+
+        {code: '5A04Q01', solving_time: '2024-11-20T11:25:00Z', completion_time: '2024-11-20T11:29:00Z', time_taken: 4, score: 8, feedback: '잘했어!', solving_duration: 240},
+        {code: '5A04Q02', solving_time: '2024-11-20T11:30:00Z', completion_time: '2024-11-20T11:35:00Z', time_taken: 5, score: 7, feedback: '계속 시도해 봅시다.', solving_duration: 300},
+        {code: '5A04Q03', solving_time: '2024-11-20T11:36:00Z', completion_time: '2024-11-20T11:39:00Z', time_taken: 3, score: 10, feedback: '대단해!', solving_duration: 180},
+        {code: '5A04Q04', solving_time: '2024-11-20T11:40:00Z', completion_time: '2024-11-20T11:44:00Z', time_taken: 4, score: 9, feedback: '참 잘했어요.', solving_duration: 240},
+        {code: '5A04Q05', solving_time: '2024-11-20T11:45:00Z', completion_time: '2024-11-20T11:49:00Z', time_taken: 4, score: 6, feedback: '노력해 봅시다.', solving_duration: 240},
+
+        {code: '5A05Q01', solving_time: '2024-11-20T11:50:00Z', completion_time: '2024-11-20T11:55:00Z', time_taken: 5, score: 9, feedback: '좋아!', solving_duration: 300},
+        {code: '5A05Q02', solving_time: '2024-11-20T11:56:00Z', completion_time: '2024-11-20T12:00:00Z', time_taken: 4, score: 8, feedback: '참 잘했어요.', solving_duration: 240},
+        {code: '5A05Q03', solving_time: '2024-11-20T12:01:00Z', completion_time: '2024-11-20T12:05:00Z', time_taken: 4, score: 7, feedback: '계속 시도해 봅시다.', solving_duration: 240},
+        {code: '5A05Q04', solving_time: '2024-11-20T12:06:00Z', completion_time: '2024-11-20T12:10:00Z', time_taken: 4, score: 10, feedback: '뛰어난걸?', solving_duration: 240},
+        {code: '5A05Q05', solving_time: '2024-11-20T12:11:00Z', completion_time: '2024-11-20T12:15:00Z', time_taken: 4, score: 6, feedback: '거의 다 왔어요!', solving_duration: 240},
+
+        {code: '5A06Q01', solving_time: '2024-11-20T11:00:00Z', completion_time: '2024-11-20T11:03:00Z', time_taken: 3, score: 9, feedback: '완벽해요.', solving_duration: 180},
+        {code: '5A06Q02', solving_time: '2024-11-20T11:04:00Z', completion_time: '2024-11-20T11:08:00Z', time_taken: 4, score: 7, feedback: '거의 다 왔어요!', solving_duration: 240},
+        {code: '5A06Q03', solving_time: '2024-11-20T11:09:00Z', completion_time: '2024-11-20T11:13:00Z', time_taken: 4, score: 10, feedback: '최고야!', solving_duration: 240},
+        {code: '5A06Q04', solving_time: '2024-11-20T11:14:00Z', completion_time: '2024-11-20T11:19:00Z', time_taken: 5, score: 6, feedback: '다음에는 더 잘할 수 있을 거야.', solving_duration: 300},
+        {code: '5A06Q05', solving_time: '2024-11-20T11:20:00Z', completion_time: '2024-11-20T11:24:00Z', time_taken: 4, score: 10, feedback: '뛰어난걸?', solving_duration: 240},
+
+        {code: '5A07Q01', solving_time: '2024-11-20T11:25:00Z', completion_time: '2024-11-20T11:29:00Z', time_taken: 4, score: 8, feedback: '잘했어!', solving_duration: 240},
+        {code: '5A07Q02', solving_time: '2024-11-20T11:30:00Z', completion_time: '2024-11-20T11:35:00Z', time_taken: 5, score: 7, feedback: '계속 시도해 봅시다.', solving_duration: 300},
+        {code: '5A07Q03', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '5A07Q04', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '5A07Q05', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+
+        {code: '5A08Q01', solving_time: '2024-11-20T11:50:00Z', completion_time: '2024-11-20T11:55:00Z', time_taken: 5, score: 9, feedback: '좋아!', solving_duration: 300},
+        {code: '5A08Q02', solving_time: '2024-11-20T11:56:00Z', completion_time: '2024-11-20T12:00:00Z', time_taken: 4, score: 8, feedback: '참 잘했어요.', solving_duration: 240},
+        {code: '5A08Q03', solving_time: '2024-11-20T12:01:00Z', completion_time: '2024-11-20T12:05:00Z', time_taken: 4, score: 7, feedback: '계속 시도해 봅시다.', solving_duration: 240},
+        {code: '5A08Q04', solving_time: '2024-11-20T12:06:00Z', completion_time: '2024-11-20T12:10:00Z', time_taken: 4, score: 10, feedback: '뛰어난걸?', solving_duration: 240},
+        {code: '5A08Q05', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+
+        {code: '5A09Q01', solving_time: '2024-11-20T11:00:00Z', completion_time: '2024-11-20T11:03:00Z', time_taken: 3, score: 9, feedback: '완벽해요.', solving_duration: 180},
+        {code: '5A09Q02', solving_time: '2024-11-20T11:04:00Z', completion_time: '2024-11-20T11:08:00Z', time_taken: 4, score: 7, feedback: '거의 다 왔어요!', solving_duration: 240},
+        {code: '5A09Q03', solving_time: '2024-11-20T11:09:00Z', completion_time: '2024-11-20T11:13:00Z', time_taken: 4, score: 10, feedback: '최고야!', solving_duration: 240},
+        {code: '5A09Q04', solving_time: '2024-11-20T11:14:00Z', completion_time: '2024-11-20T11:19:00Z', time_taken: 5, score: 6, feedback: '다음에는 더 잘할 수 있을 거야.', solving_duration: 300},
+        {code: '5A09Q05', solving_time: '2024-11-20T11:20:00Z', completion_time: '2024-11-20T11:24:00Z', time_taken: 4, score: 10, feedback: '뛰어난걸?', solving_duration: 240},
+
+        {code: '5A10Q01', solving_time: '2024-11-20T11:25:00Z', completion_time: '2024-11-20T11:29:00Z', time_taken: 4, score: 8, feedback: '잘했어!', solving_duration: 240},
+        {code: '5A10Q02', solving_time: '2024-11-20T11:30:00Z', completion_time: '2024-11-20T11:35:00Z', time_taken: 5, score: 7, feedback: '계속 시도해 봅시다.', solving_duration: 300},
+        {code: '5A10Q03', solving_time: '2024-11-20T11:36:00Z', completion_time: '2024-11-20T11:39:00Z', time_taken: 3, score: 10, feedback: '대단해!', solving_duration: 180},
+        {code: '5A10Q04', solving_time: '2024-11-20T11:40:00Z', completion_time: '2024-11-20T11:44:00Z', time_taken: 4, score: 9, feedback: '참 잘했어요.', solving_duration: 240},
+        {code: '5A10Q05', solving_time: '2024-11-20T11:45:00Z', completion_time: '2024-11-20T11:49:00Z', time_taken: 4, score: 6, feedback: '노력해 봅시다.', solving_duration: 240},
+
+        {code: '5A11Q01', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '5A11Q02', solving_time: '2024-11-20T11:56:00Z', completion_time: '2024-11-20T12:00:00Z', time_taken: 4, score: 8, feedback: '참 잘했어요.', solving_duration: 240},
+        {code: '5A11Q03', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '5A11Q04', solving_time: '2024-11-20T12:06:00Z', completion_time: '2024-11-20T12:10:00Z', time_taken: 4, score: 10, feedback: '뛰어난걸?', solving_duration: 240},
+        {code: '5A11Q05', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+
+        {code: '5A12Q01', solving_time: '2024-11-20T11:50:00Z', completion_time: '2024-11-20T11:55:00Z', time_taken: 5, score: 9, feedback: '좋아!', solving_duration: 300},
+        {code: '5A12Q02', solving_time: '2024-11-20T11:56:00Z', completion_time: '2024-11-20T12:00:00Z', time_taken: 4, score: 8, feedback: '참 잘했어요.', solving_duration: 240},
+        {code: '5A12Q03', solving_time: '2024-11-20T12:01:00Z', completion_time: '2024-11-20T12:05:00Z', time_taken: 4, score: 7, feedback: '계속 시도해 봅시다.', solving_duration: 240},
+        {code: '5A12Q04', solving_time: '2024-11-20T12:06:00Z', completion_time: '2024-11-20T12:10:00Z', time_taken: 4, score: 10, feedback: '뛰어난걸?', solving_duration: 240},
+        {code: '5A12Q05', solving_time: '2024-11-20T12:11:00Z', completion_time: '2024-11-20T12:15:00Z', time_taken: 4, score: 6, feedback: '거의 다 왔어요!', solving_duration: 240}
+        ] AS q
+        MATCH (student:Person {name: '변우석'})
+        MATCH (question:Question {code: q.code})
+        WHERE question.code = q.code
+        FOREACH (_ IN CASE WHEN q.solving_time IS NOT NULL THEN [1] ELSE [] END |
+        CREATE (student)-[:SOLVED {
+            question_code: q.code,
+            is_correct: q.is_correct,
+            solving_time: q.solving_time,
+            completion_time: q.completion_time,
+            time_taken: q.time_taken,
+            score: q.score,
+            feedback: q.feedback,
+            solving_duration: q.solving_duration
+        }]->(question)
+        )
+        FOREACH (_ IN CASE WHEN q.solving_time IS NULL THEN [1] ELSE [] END |
+        CREATE (student)-[:UNSOLVED {
+            question_code: q.code,
+            solving_time: null,
+            completion_time: null,
+            time_taken: null,
+            score: null,
+            feedback: null,
+            solving_duration: null,
+            is_correct: null
+        }]->(question)
+        );
+    // 6학년
+        UNWIND [
+        {code: '6A01Q01', solving_time: '2024-11-20T10:10:00Z', completion_time: '2024-11-20T10:14:00Z', time_taken: 4, score: 7, feedback: '참 잘했어요.', solving_duration: 240},
+        {code: '6A01Q02', solving_time: '2024-11-20T10:15:00Z', completion_time: '2024-11-20T10:18:00Z', time_taken: 3, score: 6, feedback: '많이 노력했구나!', solving_duration: 180},
+        {code: '6A01Q03', solving_time: '2024-11-20T10:20:00Z', completion_time: '2024-11-20T10:22:00Z', time_taken: 2, score: 9, feedback: '대단해!', solving_duration: 120},
+        {code: '6A01Q04', solving_time: '2024-11-20T10:25:00Z', completion_time: '2024-11-20T10:30:00Z', time_taken: 5, score: 8, feedback: '잘했어!', solving_duration: 300},
+        {code: '6A01Q05', solving_time: '2024-11-20T10:35:00Z', completion_time: '2024-11-20T10:39:00Z', time_taken: 4, score: 10, feedback: '완벽해!', solving_duration: 240},
+        
+        {code: '6A02Q01', solving_time: '2024-11-20T10:40:00Z', completion_time: '2024-11-20T10:45:00Z', time_taken: 5, score: 7, feedback: '잘하는데?', solving_duration: 300},
+        {code: '6A02Q02', solving_time: '2024-11-20T10:50:00Z', completion_time: '2024-11-20T10:55:00Z', time_taken: 5, score: 6, feedback: '노력이 필요해요.', solving_duration: 300},
+        {code: '6A02Q03', solving_time: '2024-11-20T11:00:00Z', completion_time: '2024-11-20T11:03:00Z', time_taken: 3, score: 8, feedback: '참 잘했어요.', solving_duration: 180},
+        {code: '6A02Q04', solving_time: '2024-11-20T11:05:00Z', completion_time: '2024-11-20T11:10:00Z', time_taken: 5, score: 9, feedback: '정말 좋아.', solving_duration: 300},
+        {code: '6A02Q05', solving_time: '2024-11-20T11:15:00Z', completion_time: '2024-11-20T11:18:00Z', time_taken: 3, score: 6, feedback: '더 해보아야 되겠는걸?', solving_duration: 180},
+        
+        {code: '6A03Q01', solving_time: '2024-11-20T11:20:00Z', completion_time: '2024-11-20T11:25:00Z', time_taken: 5, score: 10, feedback: '대단해!', solving_duration: 300},
+        {code: '6A03Q02', solving_time: '2024-11-20T11:30:00Z', completion_time: '2024-11-20T11:33:00Z', time_taken: 3, score: 8, feedback: '잘했어!', solving_duration: 180},
+        {code: '6A03Q03', solving_time: '2024-11-20T11:35:00Z', completion_time: '2024-11-20T11:40:00Z', time_taken: 5, score: 7, feedback: '참 잘했어요.', solving_duration: 300},
+        {code: '6A03Q04', solving_time: '2024-11-20T11:45:00Z', completion_time: '2024-11-20T11:50:00Z', time_taken: 5, score: 9, feedback: '완벽해요.', solving_duration: 300},
+        {code: '6A03Q05', solving_time: '2024-11-20T11:55:00Z', completion_time: '2024-11-20T12:00:00Z', time_taken: 5, score: 8, feedback: '잘하는데?', solving_duration: 300},
+        
+        {code: '6A04Q01', solving_time: '2024-11-20T12:05:00Z', completion_time: '2024-11-20T12:08:00Z', time_taken: 3, score: 9, feedback: '참 잘했어요.', solving_duration: 180},
+        {code: '6A04Q02', solving_time: '2024-11-20T12:10:00Z', completion_time: '2024-11-20T12:15:00Z', time_taken: 5, score: 6, feedback: '노력하자.', solving_duration: 300},
+        {code: '6A04Q03', solving_time: '2024-11-20T12:20:00Z', completion_time: '2024-11-20T12:25:00Z', time_taken: 5, score: 7, feedback: '좋은 점수인걸?', solving_duration: 300},
+        {code: '6A04Q04', solving_time: '2024-11-20T12:30:00Z', completion_time: '2024-11-20T12:34:00Z', time_taken: 4, score: 8, feedback: '정말 잘했어.', solving_duration: 240},
+        {code: '6A04Q05', solving_time: '2024-11-20T12:35:00Z', completion_time: '2024-11-20T12:40:00Z', time_taken: 5, score: 9, feedback: '대단해!', solving_duration: 300},
+
+        {code: '6A05Q01', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '6A05Q02', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '6A05Q03', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '6A05Q04', solving_time: '2024-11-20T13:10:00Z', completion_time: '2024-11-20T13:15:00Z', time_taken: 5, score: 9, feedback: '좋아!', solving_duration: 300},
+        {code: '6A05Q05', solving_time: '2024-11-20T13:20:00Z', completion_time: '2024-11-20T13:25:00Z', time_taken: 5, score: 10, feedback: '완벽해!', solving_duration: 300},
+        
+        {code: '6A06Q01', solving_time: '2024-11-20T13:30:00Z', completion_time: '2024-11-20T13:34:00Z', time_taken: 4, score: 6, feedback: '노력이 필요해요.', solving_duration: 240},
+        {code: '6A06Q02', solving_time: '2024-11-20T13:40:00Z', completion_time: '2024-11-20T13:45:00Z', time_taken: 5, score: 7, feedback: '좋은 점수인걸?', solving_duration: 300},
+        {code: '6A06Q03', solving_time: '2024-11-20T13:50:00Z', completion_time: '2024-11-20T13:53:00Z', time_taken: 3, score: 9, feedback: '참 잘했어요.', solving_duration: 180},
+        {code: '6A06Q04', solving_time: '2024-11-20T13:55:00Z', completion_time: '2024-11-20T14:00:00Z', time_taken: 5, score: 8, feedback: '정말 좋아.', solving_duration: 300},
+        {code: '6A06Q05', solving_time: '2024-11-20T14:05:00Z', completion_time: '2024-11-20T14:10:00Z', time_taken: 5, score: 6, feedback: '공부합시다.', solving_duration: 300},
+        
+        {code: '6A07Q01', solving_time: '2024-11-20T14:15:00Z', completion_time: '2024-11-20T14:19:00Z', time_taken: 4, score: 7, feedback: '잘하는데?', solving_duration: 240},
+        {code: '6A07Q02', solving_time: '2024-11-20T14:20:00Z', completion_time: '2024-11-20T14:24:00Z', time_taken: 4, score: 8, feedback: '참 잘했어요.', solving_duration: 240},
+        {code: '6A07Q03', solving_time: '2024-11-20T14:30:00Z', completion_time: '2024-11-20T14:34:00Z', time_taken: 4, score: 9, feedback: '엄청나!', solving_duration: 240},
+        {code: '6A07Q04', solving_time: '2024-11-20T14:35:00Z', completion_time: '2024-11-20T14:40:00Z', time_taken: 5, score: 6, feedback: '다음엔 더 좋은 점수를 받을 수 있을 거야.', solving_duration: 300},
+        {code: '6A07Q05', solving_time: '2024-11-20T14:45:00Z', completion_time: '2024-11-20T14:50:00Z', time_taken: 5, score: 8, feedback: '좋아!', solving_duration: 300},
+        
+        {code: '6A08Q01', solving_time: '2024-11-20T14:55:00Z', completion_time: '2024-11-20T15:00:00Z', time_taken: 5, score: 9, feedback: '참 잘했어요.', solving_duration: 300},
+        {code: '6A08Q02', solving_time: '2024-11-20T15:05:00Z', completion_time: '2024-11-20T15:09:00Z', time_taken: 4, score: 7, feedback: '좋은 점수인걸?', solving_duration: 240},
+        {code: '6A08Q03', solving_time: '2024-11-20T15:10:00Z', completion_time: '2024-11-20T15:14:00Z', time_taken: 4, score: 8, feedback: '정말 좋아.', solving_duration: 240},
+        {code: '6A08Q04', solving_time: '2024-11-20T15:15:00Z', completion_time: '2024-11-20T15:19:00Z', time_taken: 4, score: 6, feedback: '더 해보아야 되겠는걸?', solving_duration: 240},
+        {code: '6A08Q05', solving_time: '2024-11-20T15:20:00Z', completion_time: '2024-11-20T15:24:00Z', time_taken: 4, score: 10, feedback: '완벽해!', solving_duration: 240},
+        
+        {code: '6A09Q01', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '6A09Q02', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '6A09Q03', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '6A09Q04', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '6A09Q05', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        
+        {code: '6A10Q01', solving_time: '2024-11-20T16:05:00Z', completion_time: '2024-11-20T16:10:00Z', time_taken: 5, score: 6, feedback: '더 해보아야 되겠는걸?', solving_duration: 300},
+        {code: '6A10Q02', solving_time: '2024-11-20T16:15:00Z', completion_time: '2024-11-20T16:20:00Z', time_taken: 5, score: 8, feedback: '좋은 점수인걸?', solving_duration: 300},
+        {code: '6A10Q03', solving_time: '2024-11-20T16:25:00Z', completion_time: '2024-11-20T16:30:00Z', time_taken: 5, score: 9, feedback: '참 잘했어요.', solving_duration: 300},
+        {code: '6A10Q04', solving_time: '2024-11-20T16:35:00Z', completion_time: '2024-11-20T16:39:00Z', time_taken: 4, score: 7, feedback: '잘했어!', solving_duration: 240},
+        {code: '6A10Q05', solving_time: '2024-11-20T16:40:00Z', completion_time: '2024-11-20T16:45:00Z', time_taken: 5, score: 10, feedback: '완벽해!', solving_duration: 300}
+        ] AS q
+        MATCH (student:Person {name: '신세경'})
+        MATCH (question:Question {code: q.code})
+        WHERE question.code = q.code
+        FOREACH (_ IN CASE WHEN q.solving_time IS NOT NULL THEN [1] ELSE [] END |
+        CREATE (student)-[:SOLVED {
+            question_code: q.code,
+            is_correct: q.is_correct,
+            solving_time: q.solving_time,
+            completion_time: q.completion_time,
+            time_taken: q.time_taken,
+            score: q.score,
+            feedback: q.feedback,
+            solving_duration: q.solving_duration
+        }]->(question)
+        )
+        FOREACH (_ IN CASE WHEN q.solving_time IS NULL THEN [1] ELSE [] END |
+        CREATE (student)-[:UNSOLVED {
+            question_code: q.code,
+            solving_time: null,
+            completion_time: null,
+            time_taken: null,
+            score: null,
+            feedback: null,
+            solving_duration: null,
+            is_correct: null
+        }]->(question)
+        );
+
+        UNWIND [
+        {code: '6A01Q01', solving_time: '2024-11-20T10:10:00Z', completion_time: '2024-11-20T10:14:00Z', time_taken: 4, score: 7, feedback: '참 잘했어요.', solving_duration: 240},
+        {code: '6A01Q02', solving_time: '2024-11-20T10:15:00Z', completion_time: '2024-11-20T10:18:00Z', time_taken: 3, score: 6, feedback: '많이 노력했구나!', solving_duration: 180},
+        {code: '6A01Q03', solving_time: '2024-11-20T10:20:00Z', completion_time: '2024-11-20T10:22:00Z', time_taken: 2, score: 9, feedback: '대단해!', solving_duration: 120},
+        {code: '6A01Q04', solving_time: '2024-11-20T10:25:00Z', completion_time: '2024-11-20T10:30:00Z', time_taken: 5, score: 8, feedback: '잘했어!', solving_duration: 300},
+        {code: '6A01Q05', solving_time: '2024-11-20T10:35:00Z', completion_time: '2024-11-20T10:39:00Z', time_taken: 4, score: 10, feedback: '완벽해!', solving_duration: 240},
+        
+        {code: '6A02Q01', solving_time: '2024-11-20T10:40:00Z', completion_time: '2024-11-20T10:45:00Z', time_taken: 5, score: 7, feedback: '잘하는데?', solving_duration: 300},
+        {code: '6A02Q02', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '6A02Q03', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '6A02Q04', solving_time: '2024-11-20T11:05:00Z', completion_time: '2024-11-20T11:10:00Z', time_taken: 5, score: 9, feedback: '정말 좋아.', solving_duration: 300},
+        {code: '6A02Q05', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        
+        {code: '6A03Q01', solving_time: '2024-11-20T11:20:00Z', completion_time: '2024-11-20T11:25:00Z', time_taken: 5, score: 10, feedback: '대단해!', solving_duration: 300},
+        {code: '6A03Q02', solving_time: '2024-11-20T11:30:00Z', completion_time: '2024-11-20T11:33:00Z', time_taken: 3, score: 8, feedback: '잘했어!', solving_duration: 180},
+        {code: '6A03Q03', solving_time: '2024-11-20T11:35:00Z', completion_time: '2024-11-20T11:40:00Z', time_taken: 5, score: 7, feedback: '참 잘했어요.', solving_duration: 300},
+        {code: '6A03Q04', solving_time: '2024-11-20T11:45:00Z', completion_time: '2024-11-20T11:50:00Z', time_taken: 5, score: 9, feedback: '완벽해요.', solving_duration: 300},
+        {code: '6A03Q05', solving_time: '2024-11-20T11:55:00Z', completion_time: '2024-11-20T12:00:00Z', time_taken: 5, score: 8, feedback: '잘하는데?', solving_duration: 300},
+        
+        {code: '6A04Q01', solving_time: '2024-11-20T12:05:00Z', completion_time: '2024-11-20T12:08:00Z', time_taken: 3, score: 9, feedback: '참 잘했어요.', solving_duration: 180},
+        {code: '6A04Q02', solving_time: '2024-11-20T12:10:00Z', completion_time: '2024-11-20T12:15:00Z', time_taken: 5, score: 6, feedback: '노력하자.', solving_duration: 300},
+        {code: '6A04Q03', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '6A04Q04', solving_time: '2024-11-20T12:30:00Z', completion_time: '2024-11-20T12:34:00Z', time_taken: 4, score: 8, feedback: '정말 잘했어.', solving_duration: 240},
+        {code: '6A04Q05', solving_time: '2024-11-20T12:35:00Z', completion_time: '2024-11-20T12:40:00Z', time_taken: 5, score: 9, feedback: '대단해!', solving_duration: 300},
+
+        {code: '6A05Q01', solving_time: '2024-11-20T12:45:00Z', completion_time: '2024-11-20T12:50:00Z', time_taken: 5, score: 6, feedback: '더 해보아야 되겠는걸?', solving_duration: 300},
+        {code: '6A05Q02', solving_time: '2024-11-20T12:55:00Z', completion_time: '2024-11-20T12:59:00Z', time_taken: 4, score: 8, feedback: '잘했어!', solving_duration: 240},
+        {code: '6A05Q03', solving_time: '2024-11-20T13:00:00Z', completion_time: '2024-11-20T13:05:00Z', time_taken: 5, score: 7, feedback: '많이 노력했구나!', solving_duration: 300},
+        {code: '6A05Q04', solving_time: '2024-11-20T13:10:00Z', completion_time: '2024-11-20T13:15:00Z', time_taken: 5, score: 9, feedback: '좋아!', solving_duration: 300},
+        {code: '6A05Q05', solving_time: '2024-11-20T13:20:00Z', completion_time: '2024-11-20T13:25:00Z', time_taken: 5, score: 10, feedback: '완벽해!', solving_duration: 300},
+        
+        {code: '6A06Q01', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '6A06Q02', solving_time: '2024-11-20T13:40:00Z', completion_time: '2024-11-20T13:45:00Z', time_taken: 5, score: 7, feedback: '좋은 점수인걸?', solving_duration: 300},
+        {code: '6A06Q03', solving_time: '2024-11-20T13:50:00Z', completion_time: '2024-11-20T13:53:00Z', time_taken: 3, score: 9, feedback: '참 잘했어요.', solving_duration: 180},
+        {code: '6A06Q04', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '6A06Q05', solving_time: '2024-11-20T14:05:00Z', completion_time: '2024-11-20T14:10:00Z', time_taken: 5, score: 6, feedback: '공부합시다.', solving_duration: 300},
+        
+        {code: '6A07Q01', solving_time: '2024-11-20T14:15:00Z', completion_time: '2024-11-20T14:19:00Z', time_taken: 4, score: 7, feedback: '잘하는데?', solving_duration: 240},
+        {code: '6A07Q02', solving_time: '2024-11-20T14:20:00Z', completion_time: '2024-11-20T14:24:00Z', time_taken: 4, score: 8, feedback: '참 잘했어요.', solving_duration: 240},
+        {code: '6A07Q03', solving_time: '2024-11-20T14:30:00Z', completion_time: '2024-11-20T14:34:00Z', time_taken: 4, score: 9, feedback: '엄청나!', solving_duration: 240},
+        {code: '6A07Q04', solving_time: '2024-11-20T14:35:00Z', completion_time: '2024-11-20T14:40:00Z', time_taken: 5, score: 6, feedback: '다음엔 더 성장할 수 있을 거야.', solving_duration: 300},
+        {code: '6A07Q05', solving_time: '2024-11-20T14:45:00Z', completion_time: '2024-11-20T14:50:00Z', time_taken: 5, score: 8, feedback: '좋아!', solving_duration: 300},
+        
+        {code: '6A08Q01', solving_time: '2024-11-20T14:55:00Z', completion_time: '2024-11-20T15:00:00Z', time_taken: 5, score: 9, feedback: '참 잘했어요.', solving_duration: 300},
+        {code: '6A08Q02', solving_time: '2024-11-20T15:05:00Z', completion_time: '2024-11-20T15:09:00Z', time_taken: 4, score: 7, feedback: '좋은 점수인걸?', solving_duration: 240},
+        {code: '6A08Q03', solving_time: '2024-11-20T15:10:00Z', completion_time: '2024-11-20T15:14:00Z', time_taken: 4, score: 8, feedback: '정말 좋아.', solving_duration: 240},
+        {code: '6A08Q04', solving_time: '2024-11-20T15:15:00Z', completion_time: '2024-11-20T15:19:00Z', time_taken: 4, score: 6, feedback: '더 해보아야 되겠는걸?', solving_duration: 240},
+        {code: '6A08Q05', solving_time: '2024-11-20T15:20:00Z', completion_time: '2024-11-20T15:24:00Z', time_taken: 4, score: 10, feedback: '완벽해!', solving_duration: 240},
+        
+        {code: '6A09Q01', solving_time: '2024-11-20T15:25:00Z', completion_time: '2024-11-20T15:30:00Z', time_taken: 5, score: 7, feedback: '잘했어!', solving_duration: 300},
+        {code: '6A09Q02', solving_time: '2024-11-20T15:35:00Z', completion_time: '2024-11-20T15:39:00Z', time_taken: 4, score: 6, feedback: '더 공부해 보자.', solving_duration: 240},
+        {code: '6A09Q03', solving_time: '2024-11-20T15:40:00Z', completion_time: '2024-11-20T15:44:00Z', time_taken: 4, score: 8, feedback: '잘하는데?', solving_duration: 240},
+        {code: '6A09Q04', solving_time: '2024-11-20T15:45:00Z', completion_time: '2024-11-20T15:50:00Z', time_taken: 5, score: 9, feedback: '완벽해요.', solving_duration: 300},
+        {code: '6A09Q05', solving_time: '2024-11-20T15:55:00Z', completion_time: '2024-11-20T16:00:00Z', time_taken: 5, score: 10, feedback: '대단해!', solving_duration: 300},
+        
+        {code: '6A10Q01', solving_time: '2024-11-20T16:05:00Z', completion_time: '2024-11-20T16:10:00Z', time_taken: 5, score: 6, feedback: '더 해보아야 되겠는걸?', solving_duration: 300},
+        {code: '6A10Q02', solving_time: '2024-11-20T16:15:00Z', completion_time: '2024-11-20T16:20:00Z', time_taken: 5, score: 8, feedback: '좋은 점수인걸?', solving_duration: 300},
+        {code: '6A10Q03', solving_time: '2024-11-20T16:25:00Z', completion_time: '2024-11-20T16:30:00Z', time_taken: 5, score: 9, feedback: '참 잘했어요.', solving_duration: 300},
+        {code: '6A10Q04', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null},
+        {code: '6A10Q05', solving_time: null, completion_time: null, time_taken: null, score: null, feedback: null, solving_duration: null, is_correct: null}
+        ] AS q
+        MATCH (student:Person {name: '박보검'})
+        MATCH (question:Question {code: q.code})
+        WHERE question.code = q.code
+        FOREACH (_ IN CASE WHEN q.solving_time IS NOT NULL THEN [1] ELSE [] END |
+        CREATE (student)-[:SOLVED {
+            question_code: q.code,
+            is_correct: q.is_correct,
+            solving_time: q.solving_time,
+            completion_time: q.completion_time,
+            time_taken: q.time_taken,
+            score: q.score,
+            feedback: q.feedback,
+            solving_duration: q.solving_duration
+        }]->(question)
+        )
+        FOREACH (_ IN CASE WHEN q.solving_time IS NULL THEN [1] ELSE [] END |
+        CREATE (student)-[:UNSOLVED {
+            question_code: q.code,
+            solving_time: null,
+            completion_time: null,
+            time_taken: null,
+            score: null,
+            feedback: null,
+            solving_duration: null,
+            is_correct: null
+        }]->(question)
+        );
+
+MATCH (p:Person {name: "배수지"})-[:SOLVED]->(q:Question)
+RETURN p, q
+UNION
+MATCH (p:Person {name: "배수지"})-[:UNSOLVED]->(q:Question)
+RETURN p, q
+
+MATCH (relatedTopic:MainTopic)-[:precedes*]->(t:MainTopic {name: '소수의 나눗셈'})
+RETURN relatedTopic.name;
+
+MATCH (p:Person {name: '변우석'})-[s:SOLVED]->(q:Question)<-[:has_question]-(mt:MainTopic)
+WITH mt, AVG(s.score) AS avg_score
+ORDER BY avg_score ASC
+LIMIT 1
+WITH mt AS LowestAvgMainTopic, avg_score
+MATCH (p:Person {name: '변우석'})-[:UNSOLVED]->(q:Question)<-[:has_question]-(LowestAvgMainTopic)
+RETURN LowestAvgMainTopic.name AS LowestAvgMainTopic, avg_score, q.question AS UnsolvedQuestions
